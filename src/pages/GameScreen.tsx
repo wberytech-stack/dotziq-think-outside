@@ -249,6 +249,7 @@ export default function GameScreen() {
           borderStyle={mode === 'pro' ? 'border-slate-700' : 'border-border'}
           onSolve={handleSolve}
           showHintLevel={gameState.hintLevel}
+          hintLine={puzzleConfig.hintLine}
         />
       </div>
 
