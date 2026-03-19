@@ -79,6 +79,9 @@
 }
 
 @layer components {
+  .dot-win-glow {
+    animation: dotWinGlow 1.5s ease-in-out infinite;
+  }
   .dot-pulse {
     animation: dotPulse 2s ease-in-out infinite;
   }
