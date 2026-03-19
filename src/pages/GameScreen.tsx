@@ -23,7 +23,7 @@ const MODE_THEMES = {
     textColor: 'text-[#3D2B1F]',
     dotColor: '#FF6B35',
     showTimer: false,
-    encouragement: 'Amazing job! You're a star! ⭐🎉',
+    encouragement: 'Amazing job! You are a star! ⭐🎉',
     fontSize: 'text-lg',
     hintStyle: 'prominent' as const,
     difficultyLabel: 'Easy',
