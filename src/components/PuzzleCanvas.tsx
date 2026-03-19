@@ -280,8 +280,6 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     setSolved(false);
   }, []);
 
-  const gridMin = Math.min(...dots.map(d => d.x), ...dots.map(d => d.y));
-  const gridMax = Math.max(...dots.map(d => d.x), ...dots.map(d => d.y));
 
   return (
     <div className="flex flex-col items-center gap-3 w-full">
