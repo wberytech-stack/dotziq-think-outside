@@ -3,12 +3,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 export type GameMode = 'kids' | 'student' | 'pro';
 export type PuzzleType = 'classic' | 'grid16' | 'star' | 'cross';
 
-interface Dot {
-  id: number;
-  x: number;
-  y: number;
-}
-
 interface Point {
   x: number;
   y: number;
@@ -18,6 +12,7 @@ interface GameState {
   selectedMode: GameMode;
   currentPuzzleType: PuzzleType;
   currentLevel: number;
+  currentPuzzleIndex: number;
   currentPath: Point[];
   linesUsed: number;
   hintsUsed: number;
@@ -26,6 +21,8 @@ interface GameState {
   timer: number;
   isTimerRunning: boolean;
   attempts: number;
+  sessionStreak: number;
+  lastXpAwarded: number;
 }
 
 interface UserState {
@@ -57,8 +54,9 @@ interface AppContextType {
   setCurrentPath: (path: Point[]) => void;
   setLinesUsed: (n: number) => void;
   useHint: () => void;
-  completeLevel: (time: number) => void;
+  completeLevel: (time: number, xpReward: number) => void;
   resetPuzzle: () => void;
+  nextPuzzle: () => void;
   startTimer: () => void;
   stopTimer: () => void;
   resetTimer: () => void;
@@ -73,6 +71,7 @@ const defaultGameState: GameState = {
   selectedMode: 'student',
   currentPuzzleType: 'classic',
   currentLevel: 1,
+  currentPuzzleIndex: 0,
   currentPath: [],
   linesUsed: 0,
   hintsUsed: 0,
@@ -81,6 +80,8 @@ const defaultGameState: GameState = {
   timer: 0,
   isTimerRunning: false,
   attempts: 0,
+  sessionStreak: 0,
+  lastXpAwarded: 0,
 };
 
 const defaultUserState: UserState = {
@@ -112,16 +113,6 @@ function getLevel(xp: number): string {
   if (xp >= 800) return 'Solver';
   if (xp >= 200) return 'Thinker';
   return 'Novice';
-}
-
-function xpForNextLevel(level: string): number {
-  switch (level) {
-    case 'Novice': return 200;
-    case 'Thinker': return 800;
-    case 'Solver': return 2000;
-    case 'Lateral Mind': return 5000;
-    default: return 10000;
-  }
 }
 
 export function xpProgress(xp: number, level: string): number {
@@ -185,7 +176,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resetPuzzle = useCallback(() => {
-    setGameState(s => ({ ...s, currentPath: [], linesUsed: 0, isComplete: false, hintLevel: 0, hintsUsed: 0 }));
+    setGameState(s => ({ ...s, currentPath: [], linesUsed: 0, isComplete: false, hintLevel: 0, hintsUsed: 0, lastXpAwarded: 0 }));
+  }, []);
+
+  const nextPuzzle = useCallback(() => {
+    setGameState(s => ({
+      ...s,
+      currentPuzzleIndex: s.currentPuzzleIndex + 1,
+      currentPath: [],
+      linesUsed: 0,
+      isComplete: false,
+      hintLevel: 0,
+      hintsUsed: 0,
+      timer: 0,
+      isTimerRunning: true,
+      attempts: 0,
+      lastXpAwarded: 0,
+    }));
   }, []);
 
   const startTimer = useCallback(() => {
@@ -209,10 +216,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUserState(s => ({ ...s, totalAttempts: s.totalAttempts + 1 }));
   }, []);
 
-  const completeLevel = useCallback((time: number) => {
-    setGameState(s => ({ ...s, isComplete: true, isTimerRunning: false }));
+  const completeLevel = useCallback((time: number, xpReward: number) => {
+    setGameState(s => ({
+      ...s,
+      isComplete: true,
+      isTimerRunning: false,
+      sessionStreak: s.sessionStreak + 1,
+      lastXpAwarded: xpReward,
+    }));
     setUserState(s => {
-      const newXp = s.xp + Math.max(100 - time, 10) + (s.totalAttempts === 0 ? 50 : 0);
+      const newXp = s.xp + xpReward;
       const newLevel = getLevel(newXp);
       const newSolved = s.totalSolved + 1;
       const newAchievements = [...s.achievements];
@@ -258,7 +271,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppContext.Provider value={{
       gameState, userState, setMode, setPuzzleType, setCurrentPath, setLinesUsed,
-      useHint, completeLevel, resetPuzzle, startTimer, stopTimer, resetTimer,
+      useHint, completeLevel, resetPuzzle, nextPuzzle, startTimer, stopTimer, resetTimer,
       incrementTimer, incrementAttempts, completeDailyPuzzle, toggleSetting, getThemeColors,
     }}>
       {children}

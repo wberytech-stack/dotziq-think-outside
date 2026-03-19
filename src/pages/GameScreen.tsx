@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import PuzzleCanvas from '@/components/PuzzleCanvas';
 import DotziqLogo from '@/components/DotziqLogo';
 import BottomNav from '@/components/BottomNav';
-import { getPuzzleConfig } from '@/lib/puzzleConfigs';
+import { getPuzzleChallenge, TOTAL_PUZZLES } from '@/lib/puzzleConfigs';
 import TutorialOverlay from '@/components/TutorialOverlay';
 
 const LINE_COLORS = ['#E94560', '#F5A623', '#0FD688', '#7C3AED', '#3B82F6'];
@@ -52,20 +52,38 @@ const MODE_THEMES = {
   },
 };
 
+const DIFFICULTY_COLORS: Record<string, string> = {
+  easy: 'bg-emerald-100 text-emerald-700',
+  medium: 'bg-amber-100 text-amber-700',
+  hard: 'bg-red-100 text-red-700',
+};
+
+const DIFFICULTY_COLORS_PRO: Record<string, string> = {
+  easy: 'bg-emerald-900/40 text-emerald-400',
+  medium: 'bg-amber-900/40 text-amber-400',
+  hard: 'bg-red-900/40 text-red-400',
+};
+
 export default function GameScreen() {
   const navigate = useNavigate();
-  const { gameState, userState, useHint, completeLevel, resetPuzzle,
+  const { gameState, userState, useHint, completeLevel, resetPuzzle, nextPuzzle,
     startTimer, incrementTimer, incrementAttempts, resetTimer } = useApp();
 
   const mode = gameState.selectedMode;
   const theme = MODE_THEMES[mode];
-  const puzzleConfig = getPuzzleConfig(gameState.currentPuzzleType);
+
+  const challenge = getPuzzleChallenge(gameState.currentPuzzleIndex);
+  const puzzleConfig = challenge.config;
+  const puzzleNumber = gameState.currentPuzzleIndex + 1;
 
   const [won, setWon] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [solvedPath, setSolvedPath] = useState<Point[]>([]);
   const [showHowTo, setShowHowTo] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showXpAnim, setShowXpAnim] = useState(false);
+  const [showStreakMsg, setShowStreakMsg] = useState(false);
+  const [timeExpired, setTimeExpired] = useState(false);
   const canvasKeyRef = useRef(0);
 
   useEffect(() => {
@@ -75,23 +93,47 @@ export default function GameScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Timer countdown for timed challenges
   useEffect(() => {
     if (!gameState.isTimerRunning) return;
     const iv = setInterval(() => incrementTimer(), 1000);
     return () => clearInterval(iv);
   }, [gameState.isTimerRunning, incrementTimer]);
 
+  // Check time limit
+  useEffect(() => {
+    if (challenge.timed && gameState.timer >= challenge.timed && !won) {
+      setTimeExpired(true);
+    }
+  }, [gameState.timer, challenge.timed, won]);
+
   const handleSolve = useCallback((vertices: Point[]) => {
+    if (timeExpired) return;
     setWon(true);
     setShowConfetti(true);
     setSolvedPath(vertices);
-    completeLevel(gameState.timer);
+    completeLevel(gameState.timer, challenge.xpReward);
+
+    // Show XP animation
+    setShowXpAnim(true);
+    setTimeout(() => setShowXpAnim(false), 2000);
+
+    // Check session streak for motivational message (streak incremented in completeLevel)
+    const newSessionStreak = gameState.sessionStreak + 1;
+    if (newSessionStreak > 0 && newSessionStreak % 3 === 0) {
+      setTimeout(() => {
+        setShowStreakMsg(true);
+        setTimeout(() => setShowStreakMsg(false), 3000);
+      }, 1500);
+    }
+
     setTimeout(() => setShowConfetti(false), 3000);
-  }, [completeLevel, gameState.timer]);
+  }, [completeLevel, gameState.timer, gameState.sessionStreak, challenge.xpReward, timeExpired]);
 
   const handleReset = useCallback(() => {
     setWon(false);
     setSolvedPath([]);
+    setTimeExpired(false);
     resetPuzzle();
     resetTimer();
     incrementAttempts();
@@ -99,9 +141,46 @@ export default function GameScreen() {
     canvasKeyRef.current += 1;
   }, [resetPuzzle, resetTimer, incrementAttempts, startTimer]);
 
+  const handleNextPuzzle = useCallback(() => {
+    setWon(false);
+    setSolvedPath([]);
+    setTimeExpired(false);
+    setShowXpAnim(false);
+    setShowStreakMsg(false);
+    nextPuzzle();
+    canvasKeyRef.current += 1;
+  }, [nextPuzzle]);
+
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const diffColors = mode === 'pro' ? DIFFICULTY_COLORS_PRO : DIFFICULTY_COLORS;
+
+  // Time expired screen
+  if (timeExpired && !won) {
+    return (
+      <div className={`min-h-screen flex flex-col items-center justify-center px-6 pb-24 safe-area-bottom ${theme.bg} ${theme.textColor}`}>
+        <div className="text-5xl mb-4">⏰</div>
+        <h1 className="text-3xl font-display font-bold mb-2">Time's Up!</h1>
+        <p className={`text-sm mb-6 ${mode === 'pro' ? 'text-slate-400' : 'text-muted-foreground'}`}>
+          You needed to solve it in {challenge.timed} seconds
+        </p>
+        <div className="flex flex-col gap-3 w-full max-w-[300px]">
+          <button onClick={handleReset}
+            className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-display font-semibold bg-accent text-accent-foreground transition-transform active:scale-95 min-h-[48px]">
+            Try Again
+          </button>
+          <button onClick={() => navigate('/modes')}
+            className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-display font-semibold transition-colors min-h-[48px] ${mode === 'pro' ? 'text-slate-400 hover:text-slate-200' : 'text-muted-foreground hover:text-foreground'}`}>
+            <Home size={18} />
+            Back to Menu
+          </button>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   // ─── WIN STATE ───
   if (won) {
@@ -121,6 +200,24 @@ export default function GameScreen() {
                 }}
               />
             ))}
+          </div>
+        )}
+
+        {/* XP floating animation */}
+        {showXpAnim && (
+          <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-xp-float">
+            <span className="text-2xl font-display font-bold text-emerald-500 drop-shadow-lg">
+              +{gameState.lastXpAwarded} XP
+            </span>
+          </div>
+        )}
+
+        {/* Streak motivational message */}
+        {showStreakMsg && (
+          <div className="fixed top-1/4 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-xp-float">
+            <span className="text-xl font-display font-bold text-orange-500 drop-shadow-lg whitespace-nowrap">
+              You're on fire! 🔥 {gameState.sessionStreak} in a row!
+            </span>
           </div>
         )}
 
@@ -144,8 +241,11 @@ export default function GameScreen() {
         ) : (
           <h1 className="text-3xl font-display font-bold mb-1">Complete.</h1>
         )}
-        <p className={`text-sm mt-1 mb-6 ${mode === 'pro' ? 'text-slate-400' : 'text-muted-foreground'}`}>
-          Puzzle solved — you thought outside the box!
+        <p className={`text-sm mt-1 mb-2 ${mode === 'pro' ? 'text-slate-400' : 'text-muted-foreground'}`}>
+          Puzzle {puzzleNumber} of {TOTAL_PUZZLES} solved — you thought outside the box!
+        </p>
+        <p className={`text-xs mb-6 font-semibold text-emerald-500`}>
+          +{gameState.lastXpAwarded} XP earned
         </p>
 
         {/* Stats row */}
@@ -161,6 +261,10 @@ export default function GameScreen() {
           <div className="flex flex-col items-center">
             <span className={`text-lg font-bold ${theme.textColor}`}>{gameState.hintsUsed}</span>
             <span className="text-xs">Hints</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className={`text-lg font-bold text-orange-500`}>{gameState.sessionStreak}</span>
+            <span className="text-xs">Streak</span>
           </div>
         </div>
 
@@ -188,13 +292,15 @@ export default function GameScreen() {
 
         {/* Action buttons */}
         <div className="flex flex-col gap-3 w-full max-w-[300px]">
-          <button onClick={handleReset}
-            className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-display font-semibold bg-accent text-accent-foreground transition-transform active:scale-95 min-h-[48px]">
-            <Trophy size={18} />
-            Next Puzzle
-          </button>
+          {puzzleNumber < TOTAL_PUZZLES && (
+            <button onClick={handleNextPuzzle}
+              className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-display font-semibold bg-accent text-accent-foreground transition-transform active:scale-95 min-h-[48px]">
+              <Trophy size={18} />
+              Next Puzzle ({puzzleNumber + 1} of {TOTAL_PUZZLES})
+            </button>
+          )}
           <button onClick={() => {
-            const text = `🎯 Dotziq — ${todayStr}\n⏱ ${formatTime(gameState.timer)} · ${gameState.attempts + 1} attempt(s)\nThink Outside. Play at dotziq.com`;
+            const text = `🎯 Dotziq — Puzzle ${puzzleNumber}\n⏱ ${formatTime(gameState.timer)} · ${gameState.attempts + 1} attempt(s)\n+${gameState.lastXpAwarded} XP\nThink Outside. Play at dotziq.com`;
             navigator.clipboard?.writeText(text);
           }}
             className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-display font-semibold border-2 border-accent text-accent transition-transform active:scale-95 min-h-[48px]`}>
@@ -221,28 +327,50 @@ export default function GameScreen() {
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl hover:bg-black/5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
           <ArrowLeft size={22} />
         </button>
-        <span className="font-display font-semibold text-sm">{puzzleConfig.name}</span>
+        <div className="flex flex-col items-center">
+          <span className="font-display font-semibold text-sm">{challenge.title}</span>
+          <span className={`text-[10px] ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>
+            Puzzle {puzzleNumber} of {TOTAL_PUZZLES}
+          </span>
+        </div>
         <div className="flex items-center gap-1 min-w-[44px] min-h-[44px] justify-center" style={{ color: '#E8A317' }}>
           <Flame size={18} className="flame-flicker" />
-          <span className="text-sm font-bold">{userState.streak}</span>
+          <span className="text-sm font-bold">{gameState.sessionStreak}</span>
         </div>
       </div>
 
-      {/* Difficulty & Timer */}
+      {/* Difficulty, description & Timer */}
       <div className="flex items-center justify-between px-5 mb-1 flex-shrink-0">
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${mode === 'pro' ? 'bg-slate-800 text-slate-300' : 'bg-secondary text-secondary-foreground'}`}>
-          {theme.difficultyLabel}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${diffColors[challenge.difficulty]}`}>
+            {challenge.difficulty.charAt(0).toUpperCase() + challenge.difficulty.slice(1)}
+          </span>
+          {challenge.timed && (
+            <span className={`px-2 py-1 rounded-full text-[10px] font-semibold ${mode === 'pro' ? 'bg-slate-800 text-slate-300' : 'bg-secondary text-secondary-foreground'}`}>
+              ⏱ {challenge.timed}s limit
+            </span>
+          )}
+          {!challenge.hintsAllowed && (
+            <span className={`px-2 py-1 rounded-full text-[10px] font-semibold ${mode === 'pro' ? 'bg-slate-800 text-slate-300' : 'bg-secondary text-secondary-foreground'}`}>
+              🚫 No hints
+            </span>
+          )}
+        </div>
         {theme.showTimer && (
-          <span className={`text-sm font-mono ${mode === 'pro' ? 'text-slate-400' : 'text-muted-foreground'}`}>
+          <span className={`text-sm font-mono ${challenge.timed && gameState.timer > (challenge.timed * 0.75) ? 'text-red-500' : mode === 'pro' ? 'text-slate-400' : 'text-muted-foreground'}`}>
             {formatTime(gameState.timer)}
+            {challenge.timed && <span className="text-[10px] ml-1">/ {formatTime(challenge.timed)}</span>}
           </span>
         )}
       </div>
 
-      {/* Main game area — fills remaining space, centers content vertically */}
+      {/* Challenge description */}
+      <div className={`text-center text-xs px-6 mb-1 flex-shrink-0 ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>
+        {challenge.description}
+      </div>
+
+      {/* Main game area */}
       <div className="flex-1 flex flex-col items-center justify-center px-3 min-h-0">
-        {/* Canvas — 75% width on mobile, max 400px */}
         <div className="w-[75vw] max-w-[400px]">
           <PuzzleCanvas
             key={canvasKeyRef.current}
@@ -276,17 +404,19 @@ export default function GameScreen() {
             Watch Solution
           </button>
 
-          <button onClick={useHint}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs transition-all active:scale-95 min-h-[44px] ${
-              theme.hintStyle === 'prominent'
-                ? 'bg-orange-400 text-orange-950 shadow-md'
-                : theme.hintStyle === 'minimal'
-                ? 'text-slate-400 hover:text-slate-200'
-                : 'bg-secondary text-secondary-foreground'
-            }`}>
-            <Lightbulb size={15} />
-            Hint {gameState.hintLevel > 0 ? `(${gameState.hintLevel}/3)` : ''}
-          </button>
+          {challenge.hintsAllowed && (
+            <button onClick={useHint}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs transition-all active:scale-95 min-h-[44px] ${
+                theme.hintStyle === 'prominent'
+                  ? 'bg-orange-400 text-orange-950 shadow-md'
+                  : theme.hintStyle === 'minimal'
+                  ? 'text-slate-400 hover:text-slate-200'
+                  : 'bg-secondary text-secondary-foreground'
+              }`}>
+              <Lightbulb size={15} />
+              Hint {gameState.hintLevel > 0 ? `(${gameState.hintLevel}/3)` : ''}
+            </button>
+          )}
         </div>
 
         {/* How to solve tooltip */}
