@@ -267,6 +267,15 @@ export default function GameScreen() {
           How to solve
         </button>
 
+        {/* Watch Solution */}
+        <button onClick={() => setShowTutorial(true)}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 min-h-[44px] ${
+            mode === 'pro' ? 'text-slate-400 hover:text-slate-200' : 'text-muted-foreground hover:text-foreground'
+          }`}>
+          <Play size={16} />
+          Watch Solution
+        </button>
+
         {/* Hint button */}
         <button onClick={useHint}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 min-h-[44px] ${
