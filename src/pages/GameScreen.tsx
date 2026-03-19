@@ -65,6 +65,7 @@ export default function GameScreen() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [solvedPath, setSolvedPath] = useState<Point[]>([]);
   const [showHowTo, setShowHowTo] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const canvasKeyRef = useRef(0);
 
   useEffect(() => {
