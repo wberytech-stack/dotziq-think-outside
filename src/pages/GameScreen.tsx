@@ -280,7 +280,7 @@ export default function GameScreen() {
       {/* How to solve tooltip */}
       {showHowTo && (
         <div className={`mx-5 mt-3 p-4 rounded-xl text-sm animate-fade-slide-up ${mode === 'pro' ? 'bg-slate-800 text-slate-300' : 'bg-secondary text-secondary-foreground'}`}>
-          💡 <strong>Your lines can go outside the dot grid.</strong> Start from a corner and think beyond the square. You have 4 line segments — use them wisely!
+          💡 <strong>{puzzleConfig.hintText}</strong> You have {puzzleConfig.maxLines} line segments — use them wisely!
         </div>
       )}
 
