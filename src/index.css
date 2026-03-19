@@ -119,6 +119,16 @@
   100% { transform: scale(1.5); opacity: 0; }
 }
 
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes dotBounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-12px); }
+}
+
 @keyframes tabBounce {
   0% { transform: scale(1); }
   50% { transform: scale(0.9); }
@@ -128,6 +138,10 @@
 @keyframes drawLine {
   from { stroke-dashoffset: 1000; }
   to { stroke-dashoffset: 0; }
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 @keyframes fadeSlideUp {
