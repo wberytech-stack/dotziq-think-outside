@@ -242,8 +242,8 @@ export default function GameScreen() {
       <div className="flex justify-center px-[15%]">
         <PuzzleCanvas
           key={canvasKeyRef.current}
-          dots={CLASSIC_DOTS}
-          maxLines={4}
+          dots={puzzleConfig.dots}
+          maxLines={puzzleConfig.maxLines}
           dotColor={theme.dotColor}
           canvasBg={mode === 'pro' ? '#1A1A2E' : mode === 'kids' ? '#FFFBF0' : '#FFFFFF'}
           borderStyle={mode === 'pro' ? 'border-slate-700' : 'border-border'}
