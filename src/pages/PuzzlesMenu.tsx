@@ -40,7 +40,12 @@ export default function PuzzlesMenu() {
       <div className="px-5 grid grid-cols-1 gap-4">
         {puzzles.map(p => (
           <button key={p.id}
-            onClick={() => !p.locked && navigate('/play')}
+            onClick={() => {
+              if (!p.locked || userState.isPro) {
+                setPuzzleType(p.id as any);
+                navigate('/play');
+              }
+            }}
             className="relative rounded-2xl border border-border bg-card p-5 text-left transition-transform active:scale-[0.98] overflow-hidden"
             disabled={p.locked && !userState.isPro}>
             {p.locked && !userState.isPro && (
