@@ -107,6 +107,11 @@
   50% { transform: scale(1.08); }
 }
 
+@keyframes dotWinGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 @keyframes flameFlicker {
   0% { transform: scaleY(1) rotate(-2deg); }
   100% { transform: scaleY(1.1) rotate(2deg); }
