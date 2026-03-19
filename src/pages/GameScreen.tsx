@@ -215,9 +215,9 @@ export default function GameScreen() {
 
   // ─── GAME SCREEN ───
   return (
-    <div className={`min-h-screen pb-24 safe-area-bottom ${theme.bg} ${theme.textColor}`}>
+    <div className={`h-[100dvh] flex flex-col ${theme.bg} ${theme.textColor}`}>
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 pt-5 pb-3">
+      <div className="flex items-center justify-between px-4 pt-3 pb-1 flex-shrink-0">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl hover:bg-black/5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
           <ArrowLeft size={22} />
         </button>
@@ -229,7 +229,7 @@ export default function GameScreen() {
       </div>
 
       {/* Difficulty & Timer */}
-      <div className="flex items-center justify-between px-5 mb-4">
+      <div className="flex items-center justify-between px-5 mb-1 flex-shrink-0">
         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${mode === 'pro' ? 'bg-slate-800 text-slate-300' : 'bg-secondary text-secondary-foreground'}`}>
           {theme.difficultyLabel}
         </span>
@@ -240,85 +240,87 @@ export default function GameScreen() {
         )}
       </div>
 
-      {/* Canvas — centered, ~70% width on mobile */}
-      <div className="flex justify-center px-[15%]">
-        <PuzzleCanvas
-          key={canvasKeyRef.current}
-          dots={puzzleConfig.dots}
-          maxLines={puzzleConfig.maxLines}
-          dotColor={theme.dotColor}
-          canvasBg={mode === 'pro' ? '#1A1A2E' : mode === 'kids' ? '#FFFBF0' : '#FFFFFF'}
-          borderStyle={mode === 'pro' ? 'border-slate-700' : 'border-border'}
-          onSolve={handleSolve}
-          showHintLevel={gameState.hintLevel}
-          hintLine={puzzleConfig.hintLine}
-          solutionPath={puzzleConfig.solutionPath}
-        />
+      {/* Main game area — fills remaining space, centers content vertically */}
+      <div className="flex-1 flex flex-col items-center justify-center px-3 min-h-0">
+        {/* Canvas — 75% width on mobile, max 400px */}
+        <div className="w-[75vw] max-w-[400px]">
+          <PuzzleCanvas
+            key={canvasKeyRef.current}
+            dots={puzzleConfig.dots}
+            maxLines={puzzleConfig.maxLines}
+            dotColor={theme.dotColor}
+            canvasBg={mode === 'pro' ? '#1A1A2E' : mode === 'kids' ? '#FFFBF0' : '#FFFFFF'}
+            borderStyle={mode === 'pro' ? 'border-slate-700' : 'border-border'}
+            onSolve={handleSolve}
+            showHintLevel={gameState.hintLevel}
+            hintLine={puzzleConfig.hintLine}
+            solutionPath={puzzleConfig.solutionPath}
+          />
+        </div>
+
+        {/* Action buttons row */}
+        <div className="flex justify-center gap-2 mt-3 px-2 flex-shrink-0 flex-wrap">
+          <button onClick={() => setShowHowTo(!showHowTo)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs transition-all active:scale-95 min-h-[44px] ${
+              mode === 'pro' ? 'text-slate-400 hover:text-slate-200' : 'text-muted-foreground hover:text-foreground'
+            }`}>
+            <HelpCircle size={15} />
+            How to solve
+          </button>
+
+          <button onClick={() => setShowTutorial(true)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs transition-all active:scale-95 min-h-[44px] ${
+              mode === 'pro' ? 'text-slate-400 hover:text-slate-200' : 'text-muted-foreground hover:text-foreground'
+            }`}>
+            <Play size={15} />
+            Watch Solution
+          </button>
+
+          <button onClick={useHint}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-xs transition-all active:scale-95 min-h-[44px] ${
+              theme.hintStyle === 'prominent'
+                ? 'bg-orange-400 text-orange-950 shadow-md'
+                : theme.hintStyle === 'minimal'
+                ? 'text-slate-400 hover:text-slate-200'
+                : 'bg-secondary text-secondary-foreground'
+            }`}>
+            <Lightbulb size={15} />
+            Hint {gameState.hintLevel > 0 ? `(${gameState.hintLevel}/3)` : ''}
+          </button>
+        </div>
+
+        {/* How to solve tooltip */}
+        {showHowTo && (
+          <div className={`mx-4 mt-2 p-3 rounded-xl text-xs animate-fade-slide-up ${mode === 'pro' ? 'bg-slate-800 text-slate-300' : 'bg-secondary text-secondary-foreground'}`}>
+            💡 <strong>{puzzleConfig.hintText}</strong> You have {puzzleConfig.maxLines} line segments — use them wisely!
+          </div>
+        )}
+
+        {/* Hint level 1: text popup */}
+        {gameState.hintLevel >= 1 && (
+          <div className={`text-xs font-medium text-center animate-fade-slide-up px-6 mt-2 ${mode === 'pro' ? 'text-red-400' : 'text-amber-600'}`}>
+            💡 Your lines can go outside the dot grid boundary — the dashed box is not a limit.
+          </div>
+        )}
+
+        {gameState.hintLevel >= 2 && (
+          <div className={`text-xs text-center px-6 mt-1 ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>
+            {gameState.hintLevel >= 3 ? '👻 Full solution shown on canvas' : '👻 First line shown on canvas'}
+          </div>
+        )}
       </div>
-
-      {/* Action buttons row */}
-      <div className="flex justify-center gap-3 mt-6 px-5">
-        {/* How to solve */}
-        <button onClick={() => setShowHowTo(!showHowTo)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 min-h-[44px] ${
-            mode === 'pro' ? 'text-slate-400 hover:text-slate-200' : 'text-muted-foreground hover:text-foreground'
-          }`}>
-          <HelpCircle size={16} />
-          How to solve
-        </button>
-
-        {/* Watch Solution */}
-        <button onClick={() => setShowTutorial(true)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 min-h-[44px] ${
-            mode === 'pro' ? 'text-slate-400 hover:text-slate-200' : 'text-muted-foreground hover:text-foreground'
-          }`}>
-          <Play size={16} />
-          Watch Solution
-        </button>
-
-        {/* Hint button */}
-        <button onClick={useHint}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 min-h-[44px] ${
-            theme.hintStyle === 'prominent'
-              ? 'bg-orange-400 text-orange-950 shadow-md'
-              : theme.hintStyle === 'minimal'
-              ? 'text-slate-400 hover:text-slate-200'
-              : 'bg-secondary text-secondary-foreground'
-          }`}>
-          <Lightbulb size={16} />
-          Hint {gameState.hintLevel > 0 ? `(${gameState.hintLevel}/3)` : ''}
-        </button>
-      </div>
-
-      {/* How to solve tooltip */}
-      {showHowTo && (
-        <div className={`mx-5 mt-3 p-4 rounded-xl text-sm animate-fade-slide-up ${mode === 'pro' ? 'bg-slate-800 text-slate-300' : 'bg-secondary text-secondary-foreground'}`}>
-          💡 <strong>{puzzleConfig.hintText}</strong> You have {puzzleConfig.maxLines} line segments — use them wisely!
-        </div>
-      )}
-
-      {/* Hint level 1: text popup */}
-      {gameState.hintLevel >= 1 && (
-        <div className={`text-sm font-medium text-center animate-fade-slide-up px-6 mt-3 ${mode === 'pro' ? 'text-red-400' : 'text-amber-600'}`}>
-          💡 Your lines can go outside the dot grid boundary — the dashed box is not a limit.
-        </div>
-      )}
-
-      {/* Hint level 2 indicator */}
-      {gameState.hintLevel >= 2 && (
-        <div className={`text-xs text-center px-6 mt-1 ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>
-          {gameState.hintLevel >= 3 ? '👻 Full solution shown on canvas' : '👻 First line shown on canvas'}
-        </div>
-      )}
 
       {/* Mock ad banner */}
       {!userState.isPro && (
-        <div className={`fixed bottom-16 left-0 right-0 h-[50px] flex items-center justify-center text-xs border-t ${
+        <div className={`flex-shrink-0 h-[50px] flex items-center justify-center text-xs border-t ${
           mode === 'pro' ? 'bg-slate-900/80 text-slate-500 border-slate-700' : 'bg-secondary/80 text-muted-foreground border-border'
         }`}>
           Ad — Upgrade to remove
         </div>
       )}
+
+      {/* Bottom nav spacer */}
+      <div className="flex-shrink-0 h-16" />
 
       {showTutorial && (
         <TutorialOverlay onClose={() => setShowTutorial(false)} />
