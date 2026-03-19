@@ -12,17 +12,17 @@ const puzzles = [
   {
     id: 'grid16', name: 'Grid Sixteen', icon: '🔷', difficulty: 4,
     desc: 'More dots. More creativity. More wow.',
-    levels: 30, locked: true,
+    levels: 30, locked: false,
   },
   {
     id: 'star', name: 'Star Path', icon: '⭐', difficulty: 5,
     desc: 'Navigate the stars without lifting your pen',
-    levels: 20, locked: true,
+    levels: 20, locked: false,
   },
   {
     id: 'cross', name: 'Cross Out', icon: '✕', difficulty: 5,
     desc: "The minimalist's ultimate challenge",
-    levels: 20, locked: true,
+    levels: 20, locked: false,
   },
 ];
 
