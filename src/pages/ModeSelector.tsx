@@ -25,7 +25,7 @@ export default function ModeSelector() {
 
   const handleSelect = (mode: GameMode) => {
     setMode(mode);
-    navigate('/play');
+    navigate('/puzzles');
   };
 
   return (
