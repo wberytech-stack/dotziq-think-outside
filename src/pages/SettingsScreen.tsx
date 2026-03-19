@@ -101,7 +101,7 @@ export default function SettingsScreen() {
       <div className="px-5 mb-6">
         <h3 className="font-display font-bold text-sm mb-3">Account</h3>
         <div className="space-y-3">
-          <button onClick={() => console.log('[Auth] Apple sign in')}
+          <button onClick={() => { if (import.meta.env.DEV) console.log('[Auth] Apple sign in'); }}
             className="w-full py-3 rounded-xl font-semibold text-sm bg-foreground text-background transition-transform active:scale-95">
              Sign in with Apple
           </button>
