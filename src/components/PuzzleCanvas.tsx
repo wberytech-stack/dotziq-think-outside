@@ -118,9 +118,10 @@ interface PuzzleCanvasProps {
   borderStyle: string;
   onSolve: (vertices: Point[]) => void;
   showHintLevel?: number;
+  hintLine?: [Point, Point] | null;
 }
 
-export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borderStyle, onSolve, showHintLevel = 0 }: PuzzleCanvasProps) {
+export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borderStyle, onSolve, showHintLevel = 0, hintLine }: PuzzleCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   // State: segments = completed line segments, each is [start, end]
