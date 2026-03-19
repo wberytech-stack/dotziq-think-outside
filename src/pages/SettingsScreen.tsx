@@ -67,7 +67,7 @@ export default function SettingsScreen() {
 
       {/* Remove Ads */}
       <div className="px-5 mb-6">
-        <button onClick={() => console.log('[IAP] Remove Ads')}
+        <button onClick={() => { if (import.meta.env.DEV) console.log('[IAP] Remove Ads'); }}
           className="w-full flex items-center justify-between p-4 rounded-xl border border-border bg-card transition-transform active:scale-[0.98]">
           <div>
             <p className="font-semibold text-sm">Remove Ads</p>
