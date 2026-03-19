@@ -58,6 +58,7 @@ export default function GameScreen() {
 
   const mode = gameState.selectedMode;
   const theme = MODE_THEMES[mode];
+  const puzzleConfig = getPuzzleConfig(gameState.currentPuzzleType);
 
   const [won, setWon] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
