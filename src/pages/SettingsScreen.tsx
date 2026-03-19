@@ -43,7 +43,7 @@ export default function SettingsScreen() {
                 </li>
               ))}
             </ul>
-            <button onClick={() => console.log('[IAP] Start trial')}
+            <button onClick={() => { if (import.meta.env.DEV) console.log('[IAP] Start trial'); }}
               className="w-full py-3.5 rounded-xl font-display font-bold bg-card text-foreground transition-transform active:scale-95">
               Start 7-Day Free Trial
             </button>
@@ -55,7 +55,7 @@ export default function SettingsScreen() {
       {/* Puzzle packs */}
       <div className="px-5 mb-6">
         <h3 className="font-display font-bold text-sm mb-3">Puzzle Packs</h3>
-        <button onClick={() => console.log('[IAP] Grid Master Pack')}
+        <button onClick={() => { if (import.meta.env.DEV) console.log('[IAP] Grid Master Pack'); }}
           className="w-full flex items-center justify-between p-4 rounded-xl border border-border bg-card transition-transform active:scale-[0.98]">
           <div>
             <p className="font-semibold text-sm">Grid Master Pack</p>
@@ -67,7 +67,7 @@ export default function SettingsScreen() {
 
       {/* Remove Ads */}
       <div className="px-5 mb-6">
-        <button onClick={() => console.log('[IAP] Remove Ads')}
+        <button onClick={() => { if (import.meta.env.DEV) console.log('[IAP] Remove Ads'); }}
           className="w-full flex items-center justify-between p-4 rounded-xl border border-border bg-card transition-transform active:scale-[0.98]">
           <div>
             <p className="font-semibold text-sm">Remove Ads</p>
@@ -101,11 +101,11 @@ export default function SettingsScreen() {
       <div className="px-5 mb-6">
         <h3 className="font-display font-bold text-sm mb-3">Account</h3>
         <div className="space-y-3">
-          <button onClick={() => console.log('[Auth] Apple sign in')}
+          <button onClick={() => { if (import.meta.env.DEV) console.log('[Auth] Apple sign in'); }}
             className="w-full py-3 rounded-xl font-semibold text-sm bg-foreground text-background transition-transform active:scale-95">
              Sign in with Apple
           </button>
-          <button onClick={() => console.log('[Auth] Google sign in')}
+          <button onClick={() => { if (import.meta.env.DEV) console.log('[Auth] Google sign in'); }}
             className="w-full py-3 rounded-xl font-semibold text-sm border-2 border-border transition-transform active:scale-95">
             Sign in with Google
           </button>
