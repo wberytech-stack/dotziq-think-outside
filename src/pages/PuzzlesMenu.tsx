@@ -28,7 +28,7 @@ const puzzles = [
 
 export default function PuzzlesMenu() {
   const navigate = useNavigate();
-  const { userState } = useApp();
+  const { userState, setPuzzleType } = useApp();
 
   return (
     <div className="min-h-screen bg-background pb-24">
