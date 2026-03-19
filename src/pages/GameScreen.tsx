@@ -371,7 +371,7 @@ export default function GameScreen() {
 
       {/* Main game area */}
       <div className="flex-1 flex flex-col items-center justify-center px-3 min-h-0">
-        <div className="w-[75vw] max-w-[400px]">
+        <div className="w-[85vw] max-w-[420px]">
           <PuzzleCanvas
             key={canvasKeyRef.current}
             dots={puzzleConfig.dots}
