@@ -185,7 +185,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resetPuzzle = useCallback(() => {
-    setGameState(s => ({ ...s, currentPath: [], linesUsed: 0, isComplete: false, hintLevel: 0 }));
+    setGameState(s => ({ ...s, currentPath: [], linesUsed: 0, isComplete: false, hintLevel: 0, hintsUsed: 0 }));
   }, []);
 
   const startTimer = useCallback(() => {
