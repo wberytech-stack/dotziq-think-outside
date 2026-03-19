@@ -43,7 +43,7 @@ export default function SettingsScreen() {
                 </li>
               ))}
             </ul>
-            <button onClick={() => console.log('[IAP] Start trial')}
+            <button onClick={() => { if (import.meta.env.DEV) console.log('[IAP] Start trial'); }}
               className="w-full py-3.5 rounded-xl font-display font-bold bg-card text-foreground transition-transform active:scale-95">
               Start 7-Day Free Trial
             </button>
