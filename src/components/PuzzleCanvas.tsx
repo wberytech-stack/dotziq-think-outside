@@ -135,7 +135,12 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
   const [touchedDots, setTouchedDots] = useState<Set<number>>(new Set());
   const [solved, setSolved] = useState(false);
 
-  const viewBox = '-80 -80 560 560'; // generous space outside 100-300 grid
+  const gMin = Math.min(...dots.map(d => d.x), ...dots.map(d => d.y));
+  const gMax = Math.max(...dots.map(d => d.x), ...dots.map(d => d.y));
+  const padding = 80;
+  const vbSize = (gMax - gMin) + padding * 2;
+  const vbOrigin = gMin - padding;
+  const viewBox = `${vbOrigin} ${vbOrigin} ${vbSize} ${vbSize}`;
 
   const getSvgPoint = useCallback((e: React.MouseEvent | React.TouchEvent): Point | null => {
     const svg = svgRef.current;
