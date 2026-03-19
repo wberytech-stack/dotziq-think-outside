@@ -236,12 +236,12 @@ export default function PuzzleCanvas({
           </defs>
           <rect x={vbOrigin} y={vbOrigin} width={vbSize} height={vbSize} fill="url(#dotGrid)" />
 
-          {/* Dashed boundary box — the "box" to think outside of */}
+          {/* Dashed boundary box — the "box" to think outside of, with 30px padding */}
           <rect
-            x={gMin - 15} y={gMin - 15}
-            width={gMax - gMin + 30} height={gMax - gMin + 30}
-            fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4"
-            opacity="0.12" rx="4"
+            x={gMin - 30} y={gMin - 30}
+            width={gMax - gMin + 60} height={gMax - gMin + 60}
+            fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 5"
+            opacity="0.15" rx="8"
           />
 
           {/* Hint level 2: single ghost line */}
@@ -279,21 +279,23 @@ export default function PuzzleCanvas({
             />
           )}
 
-          {/* Dots */}
+          {/* Dots — 18px radius with 28px tap target glow */}
           {dots.map(dot => (
             <g key={dot.id}>
+              {/* Invisible tap target area */}
+              <circle cx={dot.x} cy={dot.y} r="28" fill="transparent" />
               {touchedDots.has(dot.id) && (
-                <circle cx={dot.x} cy={dot.y} r="18" fill={dotColor} opacity="0.12" />
+                <circle cx={dot.x} cy={dot.y} r="26" fill={dotColor} opacity="0.12" />
               )}
               <circle
-                cx={dot.x} cy={dot.y} r="10"
+                cx={dot.x} cy={dot.y} r="18"
                 fill={dotColor}
                 opacity={solved ? undefined : 1}
                 className={solved ? 'dot-win-glow' : ''}
                 style={solved ? { animationDelay: `${dot.id * 0.1}s` } : undefined}
               />
               {touchedDots.has(dot.id) && (
-                <circle cx={dot.x} cy={dot.y} r="4" fill="white" opacity="0.7" />
+                <circle cx={dot.x} cy={dot.y} r="7" fill="white" opacity="0.7" />
               )}
             </g>
           ))}
