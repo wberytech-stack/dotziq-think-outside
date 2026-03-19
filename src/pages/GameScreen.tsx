@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Lightbulb, Flame, Share2, Trophy, Home, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Lightbulb, Flame, Share2, Trophy, Home, HelpCircle, Play } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import PuzzleCanvas from '@/components/PuzzleCanvas';
 import DotziqLogo from '@/components/DotziqLogo';
 import BottomNav from '@/components/BottomNav';
 import { getPuzzleConfig } from '@/lib/puzzleConfigs';
+import TutorialOverlay from '@/components/TutorialOverlay';
 
 const LINE_COLORS = ['#E94560', '#F5A623', '#0FD688', '#7C3AED', '#3B82F6'];
 
@@ -64,6 +65,7 @@ export default function GameScreen() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [solvedPath, setSolvedPath] = useState<Point[]>([]);
   const [showHowTo, setShowHowTo] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const canvasKeyRef = useRef(0);
 
   useEffect(() => {
@@ -265,6 +267,15 @@ export default function GameScreen() {
           How to solve
         </button>
 
+        {/* Watch Solution */}
+        <button onClick={() => setShowTutorial(true)}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 min-h-[44px] ${
+            mode === 'pro' ? 'text-slate-400 hover:text-slate-200' : 'text-muted-foreground hover:text-foreground'
+          }`}>
+          <Play size={16} />
+          Watch Solution
+        </button>
+
         {/* Hint button */}
         <button onClick={useHint}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 min-h-[44px] ${
@@ -307,6 +318,10 @@ export default function GameScreen() {
         }`}>
           Ad — Upgrade to remove
         </div>
+      )}
+
+      {showTutorial && (
+        <TutorialOverlay onClose={() => setShowTutorial(false)} />
       )}
 
       <BottomNav />
