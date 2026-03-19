@@ -219,7 +219,7 @@ export default function GameScreen() {
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl hover:bg-black/5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
           <ArrowLeft size={22} />
         </button>
-        <span className="font-display font-semibold text-sm">Classic Puzzle</span>
+        <span className="font-display font-semibold text-sm">{puzzleConfig.name}</span>
         <div className="flex items-center gap-1 min-w-[44px] min-h-[44px] justify-center" style={{ color: '#E8A317' }}>
           <Flame size={18} className="flame-flicker" />
           <span className="text-sm font-bold">{userState.streak}</span>
