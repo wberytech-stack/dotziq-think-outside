@@ -105,7 +105,7 @@ export default function SettingsScreen() {
             className="w-full py-3 rounded-xl font-semibold text-sm bg-foreground text-background transition-transform active:scale-95">
              Sign in with Apple
           </button>
-          <button onClick={() => console.log('[Auth] Google sign in')}
+          <button onClick={() => { if (import.meta.env.DEV) console.log('[Auth] Google sign in'); }}
             className="w-full py-3 rounded-xl font-semibold text-sm border-2 border-border transition-transform active:scale-95">
             Sign in with Google
           </button>
