@@ -320,6 +320,10 @@ export default function GameScreen() {
         </div>
       )}
 
+      {showTutorial && (
+        <TutorialOverlay onClose={() => setShowTutorial(false)} />
+      )}
+
       <BottomNav />
     </div>
   );

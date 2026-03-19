@@ -34,6 +34,13 @@ export default function SplashScreen() {
     <div className="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden"
       style={{ background: '#0F0F1A' }}>
 
+      {showTutorial && (
+        <TutorialOverlay onClose={() => {
+          setShowTutorial(false);
+          localStorage.setItem('tutorialSeen', 'true');
+        }} />
+      )}
+
       {/* Skip */}
       <button onClick={() => navigate('/modes')}
         className="absolute top-6 right-6 text-sm font-medium opacity-50 hover:opacity-100 transition-opacity"

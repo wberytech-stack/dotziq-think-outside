@@ -148,6 +148,11 @@
   to { stroke-dashoffset: 0; }
 }
 
+@keyframes tutorialDraw {
+  from { stroke-dashoffset: inherit; }
+  to { stroke-dashoffset: 0; }
+}
+
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
