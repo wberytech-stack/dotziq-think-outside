@@ -1,10 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DotziqLogo from '@/components/DotziqLogo';
+import TutorialOverlay from '@/components/TutorialOverlay';
 
 export default function SplashScreen() {
   const navigate = useNavigate();
   const [phase, setPhase] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  useEffect(() => {
+    const seen = localStorage.getItem('tutorialSeen');
+    if (!seen) {
+      setShowTutorial(true);
+    }
+  }, []);
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 400);
