@@ -288,7 +288,8 @@ export default function PuzzleCanvas({
               <circle
                 cx={dot.x} cy={dot.y} r="10"
                 fill={dotColor}
-                className={solved ? 'dot-pulse' : ''}
+                opacity={solved ? undefined : 1}
+                className={solved ? 'dot-win-glow' : ''}
                 style={solved ? { animationDelay: `${dot.id * 0.1}s` } : undefined}
               />
               {touchedDots.has(dot.id) && (
