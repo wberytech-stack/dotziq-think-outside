@@ -151,7 +151,7 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     const svgX = ((clientX - rect.left) / rect.width) * vbSize + vbOrigin;
     const svgY = ((clientY - rect.top) / rect.height) * vbSize + vbOrigin;
     return { x: svgX, y: svgY };
-  }, []);
+  }, [vbSize, vbOrigin]);
 
   const computeTouched = useCallback((segs: [Point, Point][]) => {
     const t = new Set<number>();
