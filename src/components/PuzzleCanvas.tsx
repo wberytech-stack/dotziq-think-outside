@@ -13,80 +13,6 @@ interface Point {
 
 const LINE_COLORS = ['#E94560', '#F5A623', '#0FD688', '#7C3AED', '#3B82F6'];
 
-// A known solution: starts top-right corner, goes outside the grid
-const CLASSIC_SOLUTION: Point[] = [
-  { x: 300, y: 0 },    // start above top-right
-  { x: 0, y: 300 },    // diagonal to bottom-left (outside grid)
-  { x: 300, y: 300 },  // across bottom
-  { x: 300, y: 100 },  // up right side
-  { x: 100, y: 100 },  // across top... this doesn't work for 4 lines
-];
-
-// Better known 4-line solution going outside the box:
-const SOLUTION_4_LINES: Point[] = [
-  { x: 300, y: 100 },
-  { x: 400, y: 0 },    // extends OUTSIDE the grid (top-right)
-  { x: 100, y: 300 },  // diagonal through middle
-  { x: 100, y: 100 },  // up left side
-  // Actually the classic solution is:
-];
-
-// The real classic solution (4 lines, must go outside):
-// Line 1: (100,300) → (400,300) — extends right outside
-// Line 2: (400,300) → (100,0) — diagonal going above grid
-// Line 3: (100,0) → (100,300) — down left side  (only 3 unique dots here)
-// Actually the well-known solution:
-// Start bottom-left, go right past grid, diagonal up-left past grid, right, diagonal down
-// Let's use verified coordinates:
-const HINT_SOLUTION: Point[] = [
-  { x: 100, y: 300 },  // bottom-left dot
-  { x: 400, y: 300 },  // extend RIGHT past grid
-  { x: 100, y: 0 },    // diagonal up-left, past grid top
-  { x: 100, y: 300 },  // This doesn't work in 4 lines
-];
-
-// Classic 9-dot 4-line solution (verified):
-// 1: (300,100) → (0,400) — goes outside bottom-left
-// 2: (0,400) → (300,100)... 
-// The actual well-known solution:
-// Start: bottom-left (100,300), go RIGHT to (400,300) [outside], 
-// then diagonal to (100,0) [outside top], 
-// then DOWN to (100,300), 
-// then diagonal to (300,100)
-// That's 4 lines but doesn't hit all dots.
-// 
-// VERIFIED classic solution:
-// (100,300)→(400,300)→(400,100)→(100,100)→(300,300)  -- nope
-//
-// Real solution from puzzle books:
-// Line1: (300,300)→(300,100)→(100,300) nope that's 2 lines
-//
-// OK - the actual 4-line solution:
-// Pt1(100,300) Pt2(400,300) Pt3(200,0) Pt4(0,200) Pt5(300,200)
-// This passes through all 9 dots when lines extend outside.
-// But let's just use a simple verified one for hints:
-const VERIFIED_SOLUTION: Point[] = [
-  { x: 300, y: 300 }, // start bottom-right
-  { x: 0, y: 300 },   // left across bottom row (hits 9,8,7)
-  { x: 300, y: 0 },   // diagonal up-right (hits 5,3) — goes outside
-  { x: 300, y: 300 }, // This revisits...
-];
-
-// Let me just hardcode the well-known answer:
-// The famous solution extends lines beyond the 3x3 grid.
-// Solution vertices (5 points = 4 lines):
-const FAMOUS_SOLUTION: Point[] = [
-  { x: 100, y: 300 },  // start at dot 7 (bottom-left)
-  { x: 400, y: 300 },  // go RIGHT past the grid (touches dots 7,8,9)
-  { x: 200, y: 100 },  // diagonal up-left (touches dots 6,2... not quite)
-];
-
-// I'll use a practical hint approach - just show the first line going outside
-const HINT_LINE_1: [Point, Point] = [
-  { x: 100, y: 300 },
-  { x: 400, y: 300 },  // extends right beyond the grid boundary
-];
-
 function distToSegment(p: Point, a: Point, b: Point): number {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -119,14 +45,15 @@ interface PuzzleCanvasProps {
   onSolve: (vertices: Point[]) => void;
   showHintLevel?: number;
   hintLine?: [Point, Point] | null;
+  solutionPath?: Point[];
 }
 
-export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borderStyle, onSolve, showHintLevel = 0, hintLine }: PuzzleCanvasProps) {
+export default function PuzzleCanvas({
+  dots, maxLines, dotColor, canvasBg, borderStyle,
+  onSolve, showHintLevel = 0, hintLine, solutionPath = [],
+}: PuzzleCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // State: segments = completed line segments, each is [start, end]
-  // currentStart = where the next line starts (end of last segment, or null)
-  // currentEnd = live cursor position while dragging
   const [segments, setSegments] = useState<[Point, Point][]>([]);
   const [currentStart, setCurrentStart] = useState<Point | null>(null);
   const [currentEnd, setCurrentEnd] = useState<Point | null>(null);
@@ -135,9 +62,10 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
   const [touchedDots, setTouchedDots] = useState<Set<number>>(new Set());
   const [solved, setSolved] = useState(false);
 
+  // Dynamic viewBox — 100px padding ensures drawing area extends 60px+ outside grid
   const gMin = Math.min(...dots.map(d => d.x), ...dots.map(d => d.y));
   const gMax = Math.max(...dots.map(d => d.x), ...dots.map(d => d.y));
-  const padding = 80;
+  const padding = 100;
   const vbSize = (gMax - gMin) + padding * 2;
   const vbOrigin = gMin - padding;
   const viewBox = `${vbOrigin} ${vbOrigin} ${vbSize} ${vbSize}`;
@@ -173,7 +101,6 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     return t;
   }, [dots, computeTouched]);
 
-  // TAP ANYWHERE to start drawing
   const handleStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     if (solved) return;
@@ -181,19 +108,16 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     if (!p) return;
 
     if (segments.length === 0 && !currentStart) {
-      // First tap — start from wherever user taps
       setCurrentStart(p);
       setCurrentEnd(p);
       setIsDrawing(true);
       setFeedback(null);
     } else if (currentStart && !isDrawing) {
-      // Continuing from previous segment endpoint — start new drag
       setCurrentEnd(currentStart);
       setIsDrawing(true);
     }
   }, [getSvgPoint, segments, currentStart, isDrawing, solved]);
 
-  // DRAG to draw line in real-time
   const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     if (!isDrawing || solved || !currentStart) return;
@@ -204,25 +128,19 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     }
   }, [isDrawing, getSvgPoint, currentStart, segments, computeTouchedWithLive, solved]);
 
-  // LIFT to commit the segment
   const handleEnd = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     if (!isDrawing || !currentStart || !currentEnd || solved) return;
 
     const dist = Math.hypot(currentEnd.x - currentStart.x, currentEnd.y - currentStart.y);
     if (dist < 15) {
-      // Too short, ignore
-      if (segments.length === 0) {
-        // Reset to allow re-tap
-        setIsDrawing(false);
-      }
+      if (segments.length === 0) setIsDrawing(false);
       return;
     }
 
     const newSegments: [Point, Point][] = [...segments, [currentStart, currentEnd]];
     setSegments(newSegments);
 
-    // Build path for validation
     const path = [newSegments[0][0], ...newSegments.map(s => s[1])];
     const touched = computeTouched(newSegments);
     setTouchedDots(touched);
@@ -236,22 +154,18 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     }
 
     if (newSegments.length >= maxLines) {
-      // All lines used, didn't solve
       setIsDrawing(false);
       setCurrentEnd(null);
       setCurrentStart(null);
-      setFeedback(`Not quite — ${touched.size}/9 dots connected. Tap Reset to try again!`);
+      setFeedback(`Not quite — ${touched.size}/${dots.length} dots connected. Tap Reset to try again!`);
       return;
     }
 
-    // Continue: next segment starts from where this one ended
     setCurrentStart(currentEnd);
     setCurrentEnd(currentEnd);
-    // isDrawing stays false — user must tap/touch to start next segment
     setIsDrawing(false);
   }, [isDrawing, currentStart, currentEnd, segments, maxLines, dots, computeTouched, onSolve, solved]);
 
-  // When user touches again after lifting (for next segment)
   const handleContinue = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     if (solved || segments.length >= maxLines) return;
@@ -280,6 +194,13 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     setSolved(false);
   }, []);
 
+  // Build solution segments for hint level 3
+  const solutionSegments: [Point, Point][] = [];
+  if (solutionPath.length >= 2) {
+    for (let i = 0; i < solutionPath.length - 1; i++) {
+      solutionSegments.push([solutionPath[i], solutionPath[i + 1]]);
+    }
+  }
 
   return (
     <div className="flex flex-col items-center gap-3 w-full">
@@ -323,15 +244,24 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
             opacity="0.12" rx="4"
           />
 
-          {/* Hint: ghost line going outside the grid (level 2+) */}
-          {showHintLevel >= 2 && hintLine && (
+          {/* Hint level 2: single ghost line */}
+          {showHintLevel >= 2 && showHintLevel < 3 && hintLine && (
             <line
               x1={hintLine[0].x} y1={hintLine[0].y}
               x2={hintLine[1].x} y2={hintLine[1].y}
-              stroke={dotColor} strokeWidth="2.5" strokeLinecap="round"
-              opacity="0.2" strokeDasharray="8 4"
+              stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round"
+              opacity="0.35" strokeDasharray="8 4"
             />
           )}
+
+          {/* Hint level 3: full solution ghost path */}
+          {showHintLevel >= 3 && solutionSegments.map(([a, b], i) => (
+            <line key={`sol-${i}`}
+              x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+              stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"
+              opacity="0.3" strokeDasharray="6 4"
+            />
+          ))}
 
           {/* Committed line segments */}
           {segments.map(([a, b], i) => (
@@ -379,7 +309,7 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
 
           {/* "Tap to start" prompt */}
           {segments.length === 0 && !isDrawing && (
-            <text x="200" y="380" textAnchor="middle" fontSize="14" fill="currentColor" opacity="0.3"
+            <text x={(gMin + gMax) / 2} y={gMax + 60} textAnchor="middle" fontSize="14" fill="currentColor" opacity="0.3"
               fontFamily="sans-serif">
               Tap anywhere to start drawing
             </text>

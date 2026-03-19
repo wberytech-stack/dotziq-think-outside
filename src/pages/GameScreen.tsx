@@ -250,6 +250,7 @@ export default function GameScreen() {
           onSolve={handleSolve}
           showHintLevel={gameState.hintLevel}
           hintLine={puzzleConfig.hintLine}
+          solutionPath={puzzleConfig.solutionPath}
         />
       </div>
 
@@ -285,10 +286,17 @@ export default function GameScreen() {
         </div>
       )}
 
-      {/* Hint text for level 1 */}
-      {gameState.hintLevel === 1 && (
+      {/* Hint level 1: text popup */}
+      {gameState.hintLevel >= 1 && (
         <div className={`text-sm font-medium text-center animate-fade-slide-up px-6 mt-3 ${mode === 'pro' ? 'text-red-400' : 'text-amber-600'}`}>
-          💡 Your lines can go beyond the dots! Think outside the box.
+          💡 Your lines can go outside the dot grid boundary — the dashed box is not a limit.
+        </div>
+      )}
+
+      {/* Hint level 2 indicator */}
+      {gameState.hintLevel >= 2 && (
+        <div className={`text-xs text-center px-6 mt-1 ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>
+          {gameState.hintLevel >= 3 ? '👻 Full solution shown on canvas' : '👻 First line shown on canvas'}
         </div>
       )}
 
