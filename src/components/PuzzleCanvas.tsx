@@ -322,10 +322,10 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
           />
 
           {/* Hint: ghost line going outside the grid (level 2+) */}
-          {showHintLevel >= 2 && (
+          {showHintLevel >= 2 && hintLine && (
             <line
-              x1={HINT_LINE_1[0].x} y1={HINT_LINE_1[0].y}
-              x2={HINT_LINE_1[1].x} y2={HINT_LINE_1[1].y}
+              x1={hintLine[0].x} y1={hintLine[0].y}
+              x2={hintLine[1].x} y2={hintLine[1].y}
               stroke={dotColor} strokeWidth="2.5" strokeLinecap="round"
               opacity="0.2" strokeDasharray="8 4"
             />
