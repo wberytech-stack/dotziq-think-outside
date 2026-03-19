@@ -5,12 +5,7 @@ import { useApp } from '@/context/AppContext';
 import PuzzleCanvas from '@/components/PuzzleCanvas';
 import DotziqLogo from '@/components/DotziqLogo';
 import BottomNav from '@/components/BottomNav';
-
-const CLASSIC_DOTS = [
-  { id: 1, x: 100, y: 100 }, { id: 2, x: 200, y: 100 }, { id: 3, x: 300, y: 100 },
-  { id: 4, x: 100, y: 200 }, { id: 5, x: 200, y: 200 }, { id: 6, x: 300, y: 200 },
-  { id: 7, x: 100, y: 300 }, { id: 8, x: 200, y: 300 }, { id: 9, x: 300, y: 300 },
-];
+import { getPuzzleConfig } from '@/lib/puzzleConfigs';
 
 const LINE_COLORS = ['#E94560', '#F5A623', '#0FD688', '#7C3AED', '#3B82F6'];
 
@@ -63,6 +58,7 @@ export default function GameScreen() {
 
   const mode = gameState.selectedMode;
   const theme = MODE_THEMES[mode];
+  const puzzleConfig = getPuzzleConfig(gameState.currentPuzzleType);
 
   const [won, setWon] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -174,7 +170,7 @@ export default function GameScreen() {
           </div>
           <div className={`aspect-square w-full rounded-xl border ${theme.borderColor} overflow-hidden mb-3 ${mode === 'pro' ? 'bg-[#0F0F1A]' : 'bg-background'}`}>
             <svg viewBox="-50 -50 500 500" className="w-full h-full">
-              {CLASSIC_DOTS.map(dot => (
+              {puzzleConfig.dots.map(dot => (
                 <circle key={dot.id} cx={dot.x} cy={dot.y} r="7" fill={theme.dotColor} opacity="0.4" />
               ))}
               {solvedPath.length > 1 && solvedPath.slice(0, -1).map((v, i) => (
@@ -223,7 +219,7 @@ export default function GameScreen() {
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl hover:bg-black/5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
           <ArrowLeft size={22} />
         </button>
-        <span className="font-display font-semibold text-sm">Classic Puzzle</span>
+        <span className="font-display font-semibold text-sm">{puzzleConfig.name}</span>
         <div className="flex items-center gap-1 min-w-[44px] min-h-[44px] justify-center" style={{ color: '#E8A317' }}>
           <Flame size={18} className="flame-flicker" />
           <span className="text-sm font-bold">{userState.streak}</span>
@@ -246,13 +242,14 @@ export default function GameScreen() {
       <div className="flex justify-center px-[15%]">
         <PuzzleCanvas
           key={canvasKeyRef.current}
-          dots={CLASSIC_DOTS}
-          maxLines={4}
+          dots={puzzleConfig.dots}
+          maxLines={puzzleConfig.maxLines}
           dotColor={theme.dotColor}
           canvasBg={mode === 'pro' ? '#1A1A2E' : mode === 'kids' ? '#FFFBF0' : '#FFFFFF'}
           borderStyle={mode === 'pro' ? 'border-slate-700' : 'border-border'}
           onSolve={handleSolve}
           showHintLevel={gameState.hintLevel}
+          hintLine={puzzleConfig.hintLine}
         />
       </div>
 
@@ -284,7 +281,7 @@ export default function GameScreen() {
       {/* How to solve tooltip */}
       {showHowTo && (
         <div className={`mx-5 mt-3 p-4 rounded-xl text-sm animate-fade-slide-up ${mode === 'pro' ? 'bg-slate-800 text-slate-300' : 'bg-secondary text-secondary-foreground'}`}>
-          💡 <strong>Your lines can go outside the dot grid.</strong> Start from a corner and think beyond the square. You have 4 line segments — use them wisely!
+          💡 <strong>{puzzleConfig.hintText}</strong> You have {puzzleConfig.maxLines} line segments — use them wisely!
         </div>
       )}
 

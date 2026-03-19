@@ -118,9 +118,10 @@ interface PuzzleCanvasProps {
   borderStyle: string;
   onSolve: (vertices: Point[]) => void;
   showHintLevel?: number;
+  hintLine?: [Point, Point] | null;
 }
 
-export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borderStyle, onSolve, showHintLevel = 0 }: PuzzleCanvasProps) {
+export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borderStyle, onSolve, showHintLevel = 0, hintLine }: PuzzleCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   // State: segments = completed line segments, each is [start, end]
@@ -134,7 +135,12 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
   const [touchedDots, setTouchedDots] = useState<Set<number>>(new Set());
   const [solved, setSolved] = useState(false);
 
-  const viewBox = '-80 -80 560 560'; // generous space outside 100-300 grid
+  const gMin = Math.min(...dots.map(d => d.x), ...dots.map(d => d.y));
+  const gMax = Math.max(...dots.map(d => d.x), ...dots.map(d => d.y));
+  const padding = 80;
+  const vbSize = (gMax - gMin) + padding * 2;
+  const vbOrigin = gMin - padding;
+  const viewBox = `${vbOrigin} ${vbOrigin} ${vbSize} ${vbSize}`;
 
   const getSvgPoint = useCallback((e: React.MouseEvent | React.TouchEvent): Point | null => {
     const svg = svgRef.current;
@@ -142,11 +148,10 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     const rect = svg.getBoundingClientRect();
     const clientX = 'touches' in e ? (e.touches[0]?.clientX ?? e.changedTouches[0]?.clientX) : e.clientX;
     const clientY = 'touches' in e ? (e.touches[0]?.clientY ?? e.changedTouches[0]?.clientY) : e.clientY;
-    // Map screen coords → SVG viewBox coords (viewBox: -80 -80 560 560)
-    const svgX = ((clientX - rect.left) / rect.width) * 560 - 80;
-    const svgY = ((clientY - rect.top) / rect.height) * 560 - 80;
+    const svgX = ((clientX - rect.left) / rect.width) * vbSize + vbOrigin;
+    const svgY = ((clientY - rect.top) / rect.height) * vbSize + vbOrigin;
     return { x: svgX, y: svgY };
-  }, []);
+  }, [vbSize, vbOrigin]);
 
   const computeTouched = useCallback((segs: [Point, Point][]) => {
     const t = new Set<number>();
@@ -275,8 +280,6 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     setSolved(false);
   }, []);
 
-  const gridMin = Math.min(...dots.map(d => d.x), ...dots.map(d => d.y));
-  const gridMax = Math.max(...dots.map(d => d.x), ...dots.map(d => d.y));
 
   return (
     <div className="flex flex-col items-center gap-3 w-full">
@@ -310,21 +313,21 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
               <circle cx="10" cy="10" r="0.5" fill="currentColor" opacity="0.06" />
             </pattern>
           </defs>
-          <rect x="-80" y="-80" width="560" height="560" fill="url(#dotGrid)" />
+          <rect x={vbOrigin} y={vbOrigin} width={vbSize} height={vbSize} fill="url(#dotGrid)" />
 
           {/* Dashed boundary box — the "box" to think outside of */}
           <rect
-            x={gridMin - 15} y={gridMin - 15}
-            width={gridMax - gridMin + 30} height={gridMax - gridMin + 30}
+            x={gMin - 15} y={gMin - 15}
+            width={gMax - gMin + 30} height={gMax - gMin + 30}
             fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4"
             opacity="0.12" rx="4"
           />
 
           {/* Hint: ghost line going outside the grid (level 2+) */}
-          {showHintLevel >= 2 && (
+          {showHintLevel >= 2 && hintLine && (
             <line
-              x1={HINT_LINE_1[0].x} y1={HINT_LINE_1[0].y}
-              x2={HINT_LINE_1[1].x} y2={HINT_LINE_1[1].y}
+              x1={hintLine[0].x} y1={hintLine[0].y}
+              x2={hintLine[1].x} y2={hintLine[1].y}
               stroke={dotColor} strokeWidth="2.5" strokeLinecap="round"
               opacity="0.2" strokeDasharray="8 4"
             />

@@ -12,23 +12,23 @@ const puzzles = [
   {
     id: 'grid16', name: 'Grid Sixteen', icon: '🔷', difficulty: 4,
     desc: 'More dots. More creativity. More wow.',
-    levels: 30, locked: true,
+    levels: 30, locked: false,
   },
   {
     id: 'star', name: 'Star Path', icon: '⭐', difficulty: 5,
     desc: 'Navigate the stars without lifting your pen',
-    levels: 20, locked: true,
+    levels: 20, locked: false,
   },
   {
     id: 'cross', name: 'Cross Out', icon: '✕', difficulty: 5,
     desc: "The minimalist's ultimate challenge",
-    levels: 20, locked: true,
+    levels: 20, locked: false,
   },
 ];
 
 export default function PuzzlesMenu() {
   const navigate = useNavigate();
-  const { userState } = useApp();
+  const { userState, setPuzzleType } = useApp();
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -40,7 +40,12 @@ export default function PuzzlesMenu() {
       <div className="px-5 grid grid-cols-1 gap-4">
         {puzzles.map(p => (
           <button key={p.id}
-            onClick={() => !p.locked && navigate('/play')}
+            onClick={() => {
+              if (!p.locked || userState.isPro) {
+                setPuzzleType(p.id as any);
+                navigate('/play');
+              }
+            }}
             className="relative rounded-2xl border border-border bg-card p-5 text-left transition-transform active:scale-[0.98] overflow-hidden"
             disabled={p.locked && !userState.isPro}>
             {p.locked && !userState.isPro && (
