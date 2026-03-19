@@ -148,9 +148,8 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
     const rect = svg.getBoundingClientRect();
     const clientX = 'touches' in e ? (e.touches[0]?.clientX ?? e.changedTouches[0]?.clientX) : e.clientX;
     const clientY = 'touches' in e ? (e.touches[0]?.clientY ?? e.changedTouches[0]?.clientY) : e.clientY;
-    // Map screen coords → SVG viewBox coords (viewBox: -80 -80 560 560)
-    const svgX = ((clientX - rect.left) / rect.width) * 560 - 80;
-    const svgY = ((clientY - rect.top) / rect.height) * 560 - 80;
+    const svgX = ((clientX - rect.left) / rect.width) * vbSize + vbOrigin;
+    const svgY = ((clientY - rect.top) / rect.height) * vbSize + vbOrigin;
     return { x: svgX, y: svgY };
   }, []);
 
