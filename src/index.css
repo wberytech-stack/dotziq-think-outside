@@ -79,6 +79,9 @@
 }
 
 @layer components {
+  .dot-win-glow {
+    animation: dotWinGlow 1.5s ease-in-out infinite;
+  }
   .dot-pulse {
     animation: dotPulse 2s ease-in-out infinite;
   }
@@ -102,6 +105,11 @@
 @keyframes dotPulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.08); }
+}
+
+@keyframes dotWinGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 @keyframes flameFlicker {
