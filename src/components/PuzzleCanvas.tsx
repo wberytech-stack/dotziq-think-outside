@@ -313,12 +313,12 @@ export default function PuzzleCanvas({ dots, maxLines, dotColor, canvasBg, borde
               <circle cx="10" cy="10" r="0.5" fill="currentColor" opacity="0.06" />
             </pattern>
           </defs>
-          <rect x="-80" y="-80" width="560" height="560" fill="url(#dotGrid)" />
+          <rect x={vbOrigin} y={vbOrigin} width={vbSize} height={vbSize} fill="url(#dotGrid)" />
 
           {/* Dashed boundary box — the "box" to think outside of */}
           <rect
-            x={gridMin - 15} y={gridMin - 15}
-            width={gridMax - gridMin + 30} height={gridMax - gridMin + 30}
+            x={gMin - 15} y={gMin - 15}
+            width={gMax - gMin + 30} height={gMax - gMin + 30}
             fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4"
             opacity="0.12" rx="4"
           />
