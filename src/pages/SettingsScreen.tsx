@@ -55,7 +55,7 @@ export default function SettingsScreen() {
       {/* Puzzle packs */}
       <div className="px-5 mb-6">
         <h3 className="font-display font-bold text-sm mb-3">Puzzle Packs</h3>
-        <button onClick={() => console.log('[IAP] Grid Master Pack')}
+        <button onClick={() => { if (import.meta.env.DEV) console.log('[IAP] Grid Master Pack'); }}
           className="w-full flex items-center justify-between p-4 rounded-xl border border-border bg-card transition-transform active:scale-[0.98]">
           <div>
             <p className="font-semibold text-sm">Grid Master Pack</p>
