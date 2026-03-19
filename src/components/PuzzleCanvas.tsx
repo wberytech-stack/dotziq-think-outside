@@ -236,12 +236,12 @@ export default function PuzzleCanvas({
           </defs>
           <rect x={vbOrigin} y={vbOrigin} width={vbSize} height={vbSize} fill="url(#dotGrid)" />
 
-          {/* Dashed boundary box — the "box" to think outside of */}
+          {/* Dashed boundary box — the "box" to think outside of, with 30px padding */}
           <rect
-            x={gMin - 15} y={gMin - 15}
-            width={gMax - gMin + 30} height={gMax - gMin + 30}
-            fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4"
-            opacity="0.12" rx="4"
+            x={gMin - 30} y={gMin - 30}
+            width={gMax - gMin + 60} height={gMax - gMin + 60}
+            fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 5"
+            opacity="0.15" rx="8"
           />
 
           {/* Hint level 2: single ghost line */}
