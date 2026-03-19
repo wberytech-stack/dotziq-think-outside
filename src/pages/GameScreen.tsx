@@ -170,7 +170,7 @@ export default function GameScreen() {
           </div>
           <div className={`aspect-square w-full rounded-xl border ${theme.borderColor} overflow-hidden mb-3 ${mode === 'pro' ? 'bg-[#0F0F1A]' : 'bg-background'}`}>
             <svg viewBox="-50 -50 500 500" className="w-full h-full">
-              {CLASSIC_DOTS.map(dot => (
+              {puzzleConfig.dots.map(dot => (
                 <circle key={dot.id} cx={dot.x} cy={dot.y} r="7" fill={theme.dotColor} opacity="0.4" />
               ))}
               {solvedPath.length > 1 && solvedPath.slice(0, -1).map((v, i) => (
