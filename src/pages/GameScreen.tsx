@@ -5,12 +5,7 @@ import { useApp } from '@/context/AppContext';
 import PuzzleCanvas from '@/components/PuzzleCanvas';
 import DotziqLogo from '@/components/DotziqLogo';
 import BottomNav from '@/components/BottomNav';
-
-const CLASSIC_DOTS = [
-  { id: 1, x: 100, y: 100 }, { id: 2, x: 200, y: 100 }, { id: 3, x: 300, y: 100 },
-  { id: 4, x: 100, y: 200 }, { id: 5, x: 200, y: 200 }, { id: 6, x: 300, y: 200 },
-  { id: 7, x: 100, y: 300 }, { id: 8, x: 200, y: 300 }, { id: 9, x: 300, y: 300 },
-];
+import { getPuzzleConfig } from '@/lib/puzzleConfigs';
 
 const LINE_COLORS = ['#E94560', '#F5A623', '#0FD688', '#7C3AED', '#3B82F6'];
 
