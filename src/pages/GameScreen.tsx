@@ -481,6 +481,8 @@ export default function GameScreen() {
             showHintLevel={gameState.hintLevel}
             hintLine={puzzleConfig.hintLine}
             solutionPath={puzzleConfig.solutionPath}
+            obstacles={puzzleConfig.obstacles}
+            soundEnabled={userState.soundEnabled}
           />
         </div>
 
