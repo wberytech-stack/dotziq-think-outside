@@ -219,6 +219,14 @@ export default function GameScreen() {
                 <span className={`text-[10px] ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>Limit</span>
               </div>
             )}
+            {puzzleConfig.obstacles && puzzleConfig.obstacles.length > 0 && (
+              <div className="flex flex-col items-center gap-1">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${mode === 'pro' ? 'bg-slate-800' : 'bg-white/80'} shadow-sm`}>
+                  <AlertTriangle size={20} className="text-red-500" />
+                </div>
+                <span className="text-lg font-bold text-red-500">{puzzleConfig.obstacles.length}</span>
+                <span className={`text-[10px] ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>Blocked</span>
+              </div>
           </div>
 
           {/* Special rules */}
