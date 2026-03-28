@@ -160,13 +160,29 @@ export default function PuzzleCanvas({
     }
 
     const newSegments: [Point, Point][] = [...segments, [currentStart, currentEnd]];
+
+    // Check obstacle hit
+    if (obstacles.length > 0 && checkObstacleHit([[currentStart, currentEnd]], dots, obstacles)) {
+      if (soundEnabled) playError();
+      setFeedback('🔴 Line hit an obstacle! Tap Reset to try again.');
+      setSegments(newSegments);
+      setIsDrawing(false);
+      setCurrentEnd(null);
+      setCurrentStart(null);
+      return;
+    }
+
     setSegments(newSegments);
+    if (soundEnabled) playLineConnect(newSegments.length - 1);
 
     const path = [newSegments[0][0], ...newSegments.map(s => s[1])];
+    const requiredDots = dots.filter(d => !obstacles.includes(d.id));
     const touched = computeTouched(newSegments);
+    // Remove obstacle dots from touched count
+    const activeTouched = new Set([...touched].filter(id => !obstacles.includes(id)));
     setTouchedDots(touched);
 
-    if (validateSolution(path, dots)) {
+    if (validateSolution(path, dots, obstacles)) {
       setSolved(true);
       setIsDrawing(false);
       setCurrentEnd(null);
@@ -178,14 +194,15 @@ export default function PuzzleCanvas({
       setIsDrawing(false);
       setCurrentEnd(null);
       setCurrentStart(null);
-      setFeedback(`Not quite — ${touched.size}/${dots.length} dots connected. Tap Reset to try again!`);
+      if (soundEnabled) playError();
+      setFeedback(`Not quite — ${activeTouched.size}/${requiredDots.length} dots connected. Tap Reset to try again!`);
       return;
     }
 
     setCurrentStart(currentEnd);
     setCurrentEnd(currentEnd);
     setIsDrawing(false);
-  }, [isDrawing, currentStart, currentEnd, segments, maxLines, dots, computeTouched, onSolve, solved]);
+  }, [isDrawing, currentStart, currentEnd, segments, maxLines, dots, computeTouched, onSolve, solved, obstacles, soundEnabled]);
 
   const handleContinue = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
