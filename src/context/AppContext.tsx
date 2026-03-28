@@ -194,7 +194,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       hintLevel: 0,
       hintsUsed: 0,
       timer: 0,
-      isTimerRunning: true,
+      isTimerRunning: false,
       attempts: 0,
       lastXpAwarded: 0,
     }));
