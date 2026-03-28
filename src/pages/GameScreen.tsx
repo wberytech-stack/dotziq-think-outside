@@ -227,6 +227,7 @@ export default function GameScreen() {
                 <span className="text-lg font-bold text-red-500">{puzzleConfig.obstacles.length}</span>
                 <span className={`text-[10px] ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>Blocked</span>
               </div>
+            )}
           </div>
 
           {/* Special rules */}
