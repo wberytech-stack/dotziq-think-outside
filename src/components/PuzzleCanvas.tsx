@@ -23,17 +23,35 @@ function distToSegment(p: Point, a: Point, b: Point): number {
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
-function validateSolution(path: Point[], dots: Dot[]): boolean {
+function validateSolution(path: Point[], dots: Dot[], obstacles: number[] = []): boolean {
   if (path.length < 2) return false;
+  const requiredDots = dots.filter(d => !obstacles.includes(d.id));
   const touched = new Set<number>();
   for (let i = 0; i < path.length - 1; i++) {
-    dots.forEach(dot => {
+    requiredDots.forEach(dot => {
       if (distToSegment(dot, path[i], path[i + 1]) < 25) {
         touched.add(dot.id);
       }
     });
+    // Check if line touches any obstacle
+    for (const obstacleId of obstacles) {
+      const obsDot = dots.find(d => d.id === obstacleId);
+      if (obsDot && distToSegment(obsDot, path[i], path[i + 1]) < 25) {
+        return false; // Touching obstacle = fail
+      }
+    }
   }
-  return touched.size === dots.length;
+  return touched.size === requiredDots.length;
+}
+
+function checkObstacleHit(segs: [Point, Point][], dots: Dot[], obstacles: number[]): boolean {
+  for (const [a, b] of segs) {
+    for (const obstacleId of obstacles) {
+      const obsDot = dots.find(d => d.id === obstacleId);
+      if (obsDot && distToSegment(obsDot, a, b) < 25) return true;
+    }
+  }
+  return false;
 }
 
 interface PuzzleCanvasProps {
