@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-
+import { playLineConnect, playError } from '@/lib/sounds';
 interface Dot {
   id: number;
   x: number;
@@ -46,11 +46,14 @@ interface PuzzleCanvasProps {
   showHintLevel?: number;
   hintLine?: [Point, Point] | null;
   solutionPath?: Point[];
+  obstacles?: number[]; // dot IDs that are obstacles
+  soundEnabled?: boolean;
 }
 
 export default function PuzzleCanvas({
   dots, maxLines, dotColor, canvasBg, borderStyle,
   onSolve, showHintLevel = 0, hintLine, solutionPath = [],
+  obstacles = [], soundEnabled = true,
 }: PuzzleCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
