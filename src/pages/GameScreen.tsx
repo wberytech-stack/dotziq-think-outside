@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Lightbulb, Flame, Share2, Trophy, Home, HelpCircle, Play, Target, Timer, Sparkles } from 'lucide-react';
+import { ArrowLeft, Lightbulb, Flame, Share2, Trophy, Home, HelpCircle, Play, Target, Timer, Sparkles, AlertTriangle } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import PuzzleCanvas from '@/components/PuzzleCanvas';
 import DotziqLogo from '@/components/DotziqLogo';
 import BottomNav from '@/components/BottomNav';
 import { getModeChallenge, PUZZLES_PER_MODE } from '@/lib/puzzleConfigs';
 import TutorialOverlay from '@/components/TutorialOverlay';
+import { playWin, playReset } from '@/lib/sounds';
 
 const LINE_COLORS = ['#E94560', '#F5A623', '#0FD688', '#7C3AED', '#3B82F6'];
 
