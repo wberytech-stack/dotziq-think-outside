@@ -45,7 +45,7 @@ const DIFF_DOT: Record<string, string> = {
 
 export default function PuzzlesMenu() {
   const navigate = useNavigate();
-  const { gameState, userState } = useApp();
+  const { gameState, userState, setPuzzleIndex } = useApp();
   const mode = gameState.selectedMode;
   const theme = MODE_THEME[mode] || MODE_THEME.student;
   const challenges = getModeChallenges(mode);
@@ -54,8 +54,7 @@ export default function PuzzlesMenu() {
   const currentLevel = gameState.currentPuzzleIndex;
 
   const handleSelectLevel = (index: number) => {
-    // Update puzzle index and navigate to play
-    // We'll directly set the puzzle index via URL or context
+    setPuzzleIndex(index);
     navigate('/play');
   };
 
