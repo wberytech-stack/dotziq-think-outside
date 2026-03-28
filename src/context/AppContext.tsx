@@ -156,11 +156,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [userState.darkMode]);
 
   const setMode = useCallback((mode: GameMode) => {
-    setGameState(s => ({ ...s, selectedMode: mode }));
+    setGameState(s => ({ ...s, selectedMode: mode, currentPuzzleIndex: 0, currentPath: [], linesUsed: 0, isComplete: false, hintLevel: 0, hintsUsed: 0, timer: 0, isTimerRunning: false, attempts: 0, lastXpAwarded: 0 }));
   }, []);
 
   const setPuzzleType = useCallback((type: PuzzleType) => {
     setGameState(s => ({ ...s, currentPuzzleType: type }));
+  }, []);
+
+  const setPuzzleIndex = useCallback((index: number) => {
+    setGameState(s => ({ ...s, currentPuzzleIndex: index, currentPath: [], linesUsed: 0, isComplete: false, hintLevel: 0, hintsUsed: 0, timer: 0, isTimerRunning: false, attempts: 0, lastXpAwarded: 0 }));
   }, []);
 
   const setCurrentPath = useCallback((path: Point[]) => {
