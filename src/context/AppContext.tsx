@@ -275,7 +275,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      gameState, userState, setMode, setPuzzleType, setCurrentPath, setLinesUsed,
+      gameState, userState, setMode, setPuzzleType, setPuzzleIndex, setCurrentPath, setLinesUsed,
       useHint, completeLevel, resetPuzzle, nextPuzzle, startTimer, stopTimer, resetTimer,
       incrementTimer, incrementAttempts, completeDailyPuzzle, toggleSetting, getThemeColors,
     }}>
