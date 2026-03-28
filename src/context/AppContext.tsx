@@ -51,6 +51,7 @@ interface AppContextType {
   userState: UserState;
   setMode: (mode: GameMode) => void;
   setPuzzleType: (type: PuzzleType) => void;
+  setPuzzleIndex: (index: number) => void;
   setCurrentPath: (path: Point[]) => void;
   setLinesUsed: (n: number) => void;
   useHint: () => void;
@@ -155,11 +156,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [userState.darkMode]);
 
   const setMode = useCallback((mode: GameMode) => {
-    setGameState(s => ({ ...s, selectedMode: mode }));
+    setGameState(s => ({ ...s, selectedMode: mode, currentPuzzleIndex: 0, currentPath: [], linesUsed: 0, isComplete: false, hintLevel: 0, hintsUsed: 0, timer: 0, isTimerRunning: false, attempts: 0, lastXpAwarded: 0 }));
   }, []);
 
   const setPuzzleType = useCallback((type: PuzzleType) => {
     setGameState(s => ({ ...s, currentPuzzleType: type }));
+  }, []);
+
+  const setPuzzleIndex = useCallback((index: number) => {
+    setGameState(s => ({ ...s, currentPuzzleIndex: index, currentPath: [], linesUsed: 0, isComplete: false, hintLevel: 0, hintsUsed: 0, timer: 0, isTimerRunning: false, attempts: 0, lastXpAwarded: 0 }));
   }, []);
 
   const setCurrentPath = useCallback((path: Point[]) => {
@@ -189,7 +194,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       hintLevel: 0,
       hintsUsed: 0,
       timer: 0,
-      isTimerRunning: true,
+      isTimerRunning: false,
       attempts: 0,
       lastXpAwarded: 0,
     }));
@@ -270,7 +275,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      gameState, userState, setMode, setPuzzleType, setCurrentPath, setLinesUsed,
+      gameState, userState, setMode, setPuzzleType, setPuzzleIndex, setCurrentPath, setLinesUsed,
       useHint, completeLevel, resetPuzzle, nextPuzzle, startTimer, stopTimer, resetTimer,
       incrementTimer, incrementAttempts, completeDailyPuzzle, toggleSetting, getThemeColors,
     }}>
