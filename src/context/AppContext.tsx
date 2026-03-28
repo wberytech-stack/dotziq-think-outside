@@ -51,6 +51,7 @@ interface AppContextType {
   userState: UserState;
   setMode: (mode: GameMode) => void;
   setPuzzleType: (type: PuzzleType) => void;
+  setPuzzleIndex: (index: number) => void;
   setCurrentPath: (path: Point[]) => void;
   setLinesUsed: (n: number) => void;
   useHint: () => void;
