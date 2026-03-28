@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Lightbulb, Flame, Share2, Trophy, Home, HelpCircle, Play, Target, Timer, Sparkles } from 'lucide-react';
+import { ArrowLeft, Lightbulb, Flame, Share2, Trophy, Home, HelpCircle, Play, Target, Timer, Sparkles, AlertTriangle } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import PuzzleCanvas from '@/components/PuzzleCanvas';
 import DotziqLogo from '@/components/DotziqLogo';
 import BottomNav from '@/components/BottomNav';
 import { getModeChallenge, PUZZLES_PER_MODE } from '@/lib/puzzleConfigs';
 import TutorialOverlay from '@/components/TutorialOverlay';
+import { playWin, playReset } from '@/lib/sounds';
 
 const LINE_COLORS = ['#E94560', '#F5A623', '#0FD688', '#7C3AED', '#3B82F6'];
 
@@ -124,6 +125,7 @@ export default function GameScreen() {
     setWon(true);
     setShowConfetti(true);
     setSolvedPath(vertices);
+    if (userState.soundEnabled) playWin();
     completeLevel(gameState.timer, challenge.xpReward);
 
     setShowXpAnim(true);
@@ -144,12 +146,13 @@ export default function GameScreen() {
     setWon(false);
     setSolvedPath([]);
     setTimeExpired(false);
+    if (userState.soundEnabled) playReset();
     resetPuzzle();
     resetTimer();
     incrementAttempts();
     startTimer();
     canvasKeyRef.current += 1;
-  }, [resetPuzzle, resetTimer, incrementAttempts, startTimer]);
+  }, [resetPuzzle, resetTimer, incrementAttempts, startTimer, userState.soundEnabled]);
 
   const handleNextPuzzle = useCallback(() => {
     setWon(false);
@@ -214,6 +217,15 @@ export default function GameScreen() {
                 </div>
                 <span className="text-lg font-bold">{challenge.timed}s</span>
                 <span className={`text-[10px] ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>Limit</span>
+              </div>
+            )}
+            {puzzleConfig.obstacles && puzzleConfig.obstacles.length > 0 && (
+              <div className="flex flex-col items-center gap-1">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${mode === 'pro' ? 'bg-slate-800' : 'bg-white/80'} shadow-sm`}>
+                  <AlertTriangle size={20} className="text-red-500" />
+                </div>
+                <span className="text-lg font-bold text-red-500">{puzzleConfig.obstacles.length}</span>
+                <span className={`text-[10px] ${mode === 'pro' ? 'text-slate-500' : 'text-muted-foreground'}`}>Blocked</span>
               </div>
             )}
           </div>
@@ -478,6 +490,8 @@ export default function GameScreen() {
             showHintLevel={gameState.hintLevel}
             hintLine={puzzleConfig.hintLine}
             solutionPath={puzzleConfig.solutionPath}
+            obstacles={puzzleConfig.obstacles}
+            soundEnabled={userState.soundEnabled}
           />
         </div>
 

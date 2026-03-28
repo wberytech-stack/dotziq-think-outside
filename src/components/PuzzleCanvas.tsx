@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-
+import { playLineConnect, playError } from '@/lib/sounds';
 interface Dot {
   id: number;
   x: number;
@@ -23,17 +23,35 @@ function distToSegment(p: Point, a: Point, b: Point): number {
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
-function validateSolution(path: Point[], dots: Dot[]): boolean {
+function validateSolution(path: Point[], dots: Dot[], obstacles: number[] = []): boolean {
   if (path.length < 2) return false;
+  const requiredDots = dots.filter(d => !obstacles.includes(d.id));
   const touched = new Set<number>();
   for (let i = 0; i < path.length - 1; i++) {
-    dots.forEach(dot => {
+    requiredDots.forEach(dot => {
       if (distToSegment(dot, path[i], path[i + 1]) < 25) {
         touched.add(dot.id);
       }
     });
+    // Check if line touches any obstacle
+    for (const obstacleId of obstacles) {
+      const obsDot = dots.find(d => d.id === obstacleId);
+      if (obsDot && distToSegment(obsDot, path[i], path[i + 1]) < 25) {
+        return false; // Touching obstacle = fail
+      }
+    }
   }
-  return touched.size === dots.length;
+  return touched.size === requiredDots.length;
+}
+
+function checkObstacleHit(segs: [Point, Point][], dots: Dot[], obstacles: number[]): boolean {
+  for (const [a, b] of segs) {
+    for (const obstacleId of obstacles) {
+      const obsDot = dots.find(d => d.id === obstacleId);
+      if (obsDot && distToSegment(obsDot, a, b) < 25) return true;
+    }
+  }
+  return false;
 }
 
 interface PuzzleCanvasProps {
@@ -46,11 +64,14 @@ interface PuzzleCanvasProps {
   showHintLevel?: number;
   hintLine?: [Point, Point] | null;
   solutionPath?: Point[];
+  obstacles?: number[]; // dot IDs that are obstacles
+  soundEnabled?: boolean;
 }
 
 export default function PuzzleCanvas({
   dots, maxLines, dotColor, canvasBg, borderStyle,
   onSolve, showHintLevel = 0, hintLine, solutionPath = [],
+  obstacles = [], soundEnabled = true,
 }: PuzzleCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -139,13 +160,29 @@ export default function PuzzleCanvas({
     }
 
     const newSegments: [Point, Point][] = [...segments, [currentStart, currentEnd]];
+
+    // Check obstacle hit
+    if (obstacles.length > 0 && checkObstacleHit([[currentStart, currentEnd]], dots, obstacles)) {
+      if (soundEnabled) playError();
+      setFeedback('🔴 Line hit an obstacle! Tap Reset to try again.');
+      setSegments(newSegments);
+      setIsDrawing(false);
+      setCurrentEnd(null);
+      setCurrentStart(null);
+      return;
+    }
+
     setSegments(newSegments);
+    if (soundEnabled) playLineConnect(newSegments.length - 1);
 
     const path = [newSegments[0][0], ...newSegments.map(s => s[1])];
+    const requiredDots = dots.filter(d => !obstacles.includes(d.id));
     const touched = computeTouched(newSegments);
+    // Remove obstacle dots from touched count
+    const activeTouched = new Set([...touched].filter(id => !obstacles.includes(id)));
     setTouchedDots(touched);
 
-    if (validateSolution(path, dots)) {
+    if (validateSolution(path, dots, obstacles)) {
       setSolved(true);
       setIsDrawing(false);
       setCurrentEnd(null);
@@ -157,14 +194,15 @@ export default function PuzzleCanvas({
       setIsDrawing(false);
       setCurrentEnd(null);
       setCurrentStart(null);
-      setFeedback(`Not quite — ${touched.size}/${dots.length} dots connected. Tap Reset to try again!`);
+      if (soundEnabled) playError();
+      setFeedback(`Not quite — ${activeTouched.size}/${requiredDots.length} dots connected. Tap Reset to try again!`);
       return;
     }
 
     setCurrentStart(currentEnd);
     setCurrentEnd(currentEnd);
     setIsDrawing(false);
-  }, [isDrawing, currentStart, currentEnd, segments, maxLines, dots, computeTouched, onSolve, solved]);
+  }, [isDrawing, currentStart, currentEnd, segments, maxLines, dots, computeTouched, onSolve, solved, obstacles, soundEnabled]);
 
   const handleContinue = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
@@ -280,25 +318,39 @@ export default function PuzzleCanvas({
           )}
 
           {/* Dots — 18px radius with 28px tap target glow */}
-          {dots.map(dot => (
-            <g key={dot.id}>
-              {/* Invisible tap target area */}
-              <circle cx={dot.x} cy={dot.y} r="28" fill="transparent" />
-              {touchedDots.has(dot.id) && (
-                <circle cx={dot.x} cy={dot.y} r="26" fill={dotColor} opacity="0.12" />
-              )}
-              <circle
-                cx={dot.x} cy={dot.y} r="18"
-                fill={dotColor}
-                opacity={solved ? undefined : 1}
-                className={solved ? 'dot-win-glow' : ''}
-                style={solved ? { animationDelay: `${dot.id * 0.1}s` } : undefined}
-              />
-              {touchedDots.has(dot.id) && (
-                <circle cx={dot.x} cy={dot.y} r="7" fill="white" opacity="0.7" />
-              )}
-            </g>
-          ))}
+          {dots.map(dot => {
+            const isObstacle = obstacles.includes(dot.id);
+            const fillColor = isObstacle ? '#EF4444' : dotColor;
+            return (
+              <g key={dot.id}>
+                {/* Invisible tap target area */}
+                <circle cx={dot.x} cy={dot.y} r="28" fill="transparent" />
+                {isObstacle && (
+                  <circle cx={dot.x} cy={dot.y} r="24" fill="#EF4444" opacity="0.08" />
+                )}
+                {touchedDots.has(dot.id) && !isObstacle && (
+                  <circle cx={dot.x} cy={dot.y} r="26" fill={fillColor} opacity="0.12" />
+                )}
+                <circle
+                  cx={dot.x} cy={dot.y} r={isObstacle ? 14 : 18}
+                  fill={fillColor}
+                  opacity={solved ? undefined : isObstacle ? 0.6 : 1}
+                  className={solved && !isObstacle ? 'dot-win-glow' : ''}
+                  style={solved && !isObstacle ? { animationDelay: `${dot.id * 0.1}s` } : undefined}
+                />
+                {isObstacle && (
+                  <>
+                    {/* X mark on obstacle */}
+                    <line x1={dot.x - 6} y1={dot.y - 6} x2={dot.x + 6} y2={dot.y + 6} stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+                    <line x1={dot.x + 6} y1={dot.y - 6} x2={dot.x - 6} y2={dot.y + 6} stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+                  </>
+                )}
+                {touchedDots.has(dot.id) && !isObstacle && (
+                  <circle cx={dot.x} cy={dot.y} r="7" fill="white" opacity="0.7" />
+                )}
+              </g>
+            );
+          })}
 
           {/* Vertex indicators at segment joints */}
           {segments.length > 0 && (
