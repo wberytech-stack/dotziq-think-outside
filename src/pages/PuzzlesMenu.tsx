@@ -94,10 +94,7 @@ export default function PuzzlesMenu() {
           return (
             <button
               key={ch.id}
-              onClick={() => {
-                // Set the puzzle index in context and go
-                navigate('/play');
-              }}
+              onClick={() => handleSelectLevel(i)}
               className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-display font-bold transition-all active:scale-95 border ${
                 isCurrent
                   ? `${theme.selectedBg} border-transparent shadow-lg scale-105`
@@ -149,7 +146,7 @@ export default function PuzzlesMenu() {
               ))}
             </div>
           )}
-          <button onClick={() => navigate('/play')}
+          <button onClick={() => handleSelectLevel(currentLevel)}
             className="w-full py-3 rounded-xl font-display font-bold bg-accent text-accent-foreground transition-transform active:scale-95">
             Play Level {currentLevel + 1}
           </button>
