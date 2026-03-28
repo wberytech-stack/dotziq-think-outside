@@ -318,25 +318,39 @@ export default function PuzzleCanvas({
           )}
 
           {/* Dots — 18px radius with 28px tap target glow */}
-          {dots.map(dot => (
-            <g key={dot.id}>
-              {/* Invisible tap target area */}
-              <circle cx={dot.x} cy={dot.y} r="28" fill="transparent" />
-              {touchedDots.has(dot.id) && (
-                <circle cx={dot.x} cy={dot.y} r="26" fill={dotColor} opacity="0.12" />
-              )}
-              <circle
-                cx={dot.x} cy={dot.y} r="18"
-                fill={dotColor}
-                opacity={solved ? undefined : 1}
-                className={solved ? 'dot-win-glow' : ''}
-                style={solved ? { animationDelay: `${dot.id * 0.1}s` } : undefined}
-              />
-              {touchedDots.has(dot.id) && (
-                <circle cx={dot.x} cy={dot.y} r="7" fill="white" opacity="0.7" />
-              )}
-            </g>
-          ))}
+          {dots.map(dot => {
+            const isObstacle = obstacles.includes(dot.id);
+            const fillColor = isObstacle ? '#EF4444' : dotColor;
+            return (
+              <g key={dot.id}>
+                {/* Invisible tap target area */}
+                <circle cx={dot.x} cy={dot.y} r="28" fill="transparent" />
+                {isObstacle && (
+                  <circle cx={dot.x} cy={dot.y} r="24" fill="#EF4444" opacity="0.08" />
+                )}
+                {touchedDots.has(dot.id) && !isObstacle && (
+                  <circle cx={dot.x} cy={dot.y} r="26" fill={fillColor} opacity="0.12" />
+                )}
+                <circle
+                  cx={dot.x} cy={dot.y} r={isObstacle ? 14 : 18}
+                  fill={fillColor}
+                  opacity={solved ? undefined : isObstacle ? 0.6 : 1}
+                  className={solved && !isObstacle ? 'dot-win-glow' : ''}
+                  style={solved && !isObstacle ? { animationDelay: `${dot.id * 0.1}s` } : undefined}
+                />
+                {isObstacle && (
+                  <>
+                    {/* X mark on obstacle */}
+                    <line x1={dot.x - 6} y1={dot.y - 6} x2={dot.x + 6} y2={dot.y + 6} stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+                    <line x1={dot.x + 6} y1={dot.y - 6} x2={dot.x - 6} y2={dot.y + 6} stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+                  </>
+                )}
+                {touchedDots.has(dot.id) && !isObstacle && (
+                  <circle cx={dot.x} cy={dot.y} r="7" fill="white" opacity="0.7" />
+                )}
+              </g>
+            );
+          })}
 
           {/* Vertex indicators at segment joints */}
           {segments.length > 0 && (
