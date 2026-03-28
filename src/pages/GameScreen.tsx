@@ -125,6 +125,7 @@ export default function GameScreen() {
     setWon(true);
     setShowConfetti(true);
     setSolvedPath(vertices);
+    if (userState.soundEnabled) playWin();
     completeLevel(gameState.timer, challenge.xpReward);
 
     setShowXpAnim(true);
@@ -145,12 +146,13 @@ export default function GameScreen() {
     setWon(false);
     setSolvedPath([]);
     setTimeExpired(false);
+    if (userState.soundEnabled) playReset();
     resetPuzzle();
     resetTimer();
     incrementAttempts();
     startTimer();
     canvasKeyRef.current += 1;
-  }, [resetPuzzle, resetTimer, incrementAttempts, startTimer]);
+  }, [resetPuzzle, resetTimer, incrementAttempts, startTimer, userState.soundEnabled]);
 
   const handleNextPuzzle = useCallback(() => {
     setWon(false);
