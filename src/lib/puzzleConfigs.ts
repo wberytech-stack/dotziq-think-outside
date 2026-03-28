@@ -19,6 +19,7 @@ export interface PuzzleConfig {
   hintText: string;
   hintLine: [Point, Point] | null;
   solutionPath: Point[];
+  obstacles?: number[]; // dot IDs that are obstacles (can't be visited)
 }
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -355,21 +356,30 @@ interface ProGridDef {
   maxLines: number;
 }
 
-const PRO_GRID_TIERS: { range: [number, number]; rows: number; cols: number; spacing: number; maxLines: number }[] = [
-  { range: [1, 10], rows: 3, cols: 3, spacing: 100, maxLines: 4 },    // 9 dots
-  { range: [11, 20], rows: 3, cols: 4, spacing: 80, maxLines: 7 },    // 12 dots
-  { range: [21, 30], rows: 4, cols: 4, spacing: 75, maxLines: 6 },    // 16 dots
-  { range: [31, 40], rows: 4, cols: 5, spacing: 65, maxLines: 9 },    // 20 dots
-  { range: [41, 50], rows: 5, cols: 5, spacing: 55, maxLines: 8 },    // 25 dots
+const PRO_GRID_TIERS: { range: [number, number]; rows: number; cols: number; spacing: number; maxLines: number; obstaclePercent?: number }[] = [
+  { range: [1, 8], rows: 3, cols: 3, spacing: 100, maxLines: 4 },       // 9 dots, 2*3-2=4
+  { range: [9, 16], rows: 4, cols: 4, spacing: 80, maxLines: 6 },       // 16 dots, 2*4-2=6
+  { range: [17, 24], rows: 5, cols: 5, spacing: 65, maxLines: 8 },      // 25 dots, 2*5-2=8
+  { range: [25, 34], rows: 6, cols: 6, spacing: 55, maxLines: 10, obstaclePercent: 10 },  // 36 dots, 2*6-2=10
+  { range: [35, 44], rows: 6, cols: 6, spacing: 55, maxLines: 10, obstaclePercent: 15 },  // harder 6x6
+  { range: [45, 50], rows: 7, cols: 7, spacing: 48, maxLines: 12, obstaclePercent: 12 },  // 49 dots, 2*7-2=12
 ];
+
+// Seeded pseudo-random for deterministic obstacle placement
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
 
 function generateProChallenges(): PuzzleChallenge[] {
   const challenges: PuzzleChallenge[] = [];
   const C = 200;
 
   for (const tier of PRO_GRID_TIERS) {
-    const { rows, cols, spacing, maxLines } = tier;
-    const dotCount = rows * cols;
+    const { rows, cols, spacing, maxLines, obstaclePercent } = tier;
     const gridPts = gridPoints(rows, cols, C, C, spacing);
     const solution = rows === 3 && cols === 3
       ? CLASSIC_SOLUTION
@@ -378,6 +388,23 @@ function generateProChallenges(): PuzzleChallenge[] {
     for (let i = tier.range[0]; i <= tier.range[1]; i++) {
       const levelInTier = i - tier.range[0];
       const tierName = `${rows}×${cols}`;
+      const totalDots = rows * cols;
+
+      // Generate deterministic obstacles for this level
+      let obstacles: number[] | undefined;
+      if (obstaclePercent && obstaclePercent > 0) {
+        const rng = seededRandom(i * 1000 + rows * 100 + cols);
+        const numObstacles = Math.max(1, Math.floor(totalDots * (obstaclePercent / 100)));
+        const available = Array.from({ length: totalDots }, (_, idx) => idx + 1);
+        obstacles = [];
+        for (let o = 0; o < numObstacles && available.length > 0; o++) {
+          const pick = Math.floor(rng() * available.length);
+          obstacles.push(available[pick]);
+          available.splice(pick, 1);
+        }
+      }
+
+      const activeDotCount = totalDots - (obstacles?.length || 0);
 
       // Progressive constraints within each tier
       let timed: number | undefined;
@@ -386,8 +413,8 @@ function generateProChallenges(): PuzzleChallenge[] {
       let xp = 25;
 
       if (levelInTier >= 7) {
-        timed = 30 - (levelInTier - 7) * 5;
-        if (timed < 10) timed = 10;
+        timed = 45 - (levelInTier - 7) * 5;
+        if (timed < 12) timed = 12;
         hints = false;
         diff = 'hard';
         xp = 50;
@@ -396,7 +423,7 @@ function generateProChallenges(): PuzzleChallenge[] {
         diff = 'medium';
         xp = 25;
       } else if (levelInTier >= 3) {
-        timed = 90 - levelInTier * 10;
+        timed = 120 - levelInTier * 10;
         diff = 'medium';
         xp = 25;
       }
@@ -409,10 +436,17 @@ function generateProChallenges(): PuzzleChallenge[] {
       ];
 
       const config = makeConfig('pro', titles[levelInTier] || `${tierName} Level`, gridPts, maxLines, solution);
-      const desc = `${dotCount} dots, ${maxLines} lines — ${tierName} grid`;
+      if (obstacles) config.obstacles = obstacles;
+
+      const desc = obstacles
+        ? `${activeDotCount} active dots (${obstacles.length} blocked), ${maxLines} lines — ${tierName} grid`
+        : `${totalDots} dots, ${maxLines} lines — ${tierName} grid`;
+
+      const rules: string[] = [];
+      if (obstacles) rules.push(`🔴 ${obstacles.length} obstacle dot${obstacles.length > 1 ? 's' : ''} — avoid them!`);
 
       challenges.push(makeChallenge(i, config, diff, titles[levelInTier] || `Grid ${tierName}`, desc, xp, {
-        timed, hintsAllowed: hints,
+        timed, hintsAllowed: hints, rules,
       }));
     }
   }
