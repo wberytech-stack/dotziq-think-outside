@@ -83,8 +83,7 @@ export default function GameScreen() {
   const puzzleNumber = gameState.currentPuzzleIndex + 1;
   const totalPuzzles = PUZZLES_PER_MODE;
 
-  // Debug: log current mode and puzzle details
-  console.log('[GameScreen] mode:', mode, 'puzzleIndex:', gameState.currentPuzzleIndex, 'dots:', puzzleConfig.dots.length, 'title:', challenge.title);
+
 
   const [won, setWon] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
