@@ -83,6 +83,9 @@ export default function GameScreen() {
   const puzzleNumber = gameState.currentPuzzleIndex + 1;
   const totalPuzzles = PUZZLES_PER_MODE;
 
+  // Debug: log current mode and puzzle details
+  console.log('[GameScreen] mode:', mode, 'puzzleIndex:', gameState.currentPuzzleIndex, 'dots:', puzzleConfig.dots.length, 'title:', challenge.title);
+
   const [won, setWon] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [solvedPath, setSolvedPath] = useState<Point[]>([]);
@@ -94,12 +97,14 @@ export default function GameScreen() {
   const [gameStarted, setGameStarted] = useState(false);
   const canvasKeyRef = useRef(0);
 
+  // Reset puzzle state when mode or puzzle index changes
   useEffect(() => {
-    resetPuzzle();
-    resetTimer();
+    setWon(false);
+    setSolvedPath([]);
+    setTimeExpired(false);
     setGameStarted(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    canvasKeyRef.current += 1;
+  }, [mode, gameState.currentPuzzleIndex]);
 
   useEffect(() => {
     if (!gameState.isTimerRunning) return;
