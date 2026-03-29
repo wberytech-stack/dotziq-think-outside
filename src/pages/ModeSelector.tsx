@@ -25,7 +25,8 @@ export default function ModeSelector() {
 
   const handleSelect = (mode: GameMode) => {
     setMode(mode);
-    navigate('/puzzles');
+    // Use setTimeout to ensure state update is flushed before navigation
+    setTimeout(() => navigate('/puzzles'), 0);
   };
 
   return (

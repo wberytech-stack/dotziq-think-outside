@@ -55,7 +55,8 @@ export default function PuzzlesMenu() {
 
   const handleSelectLevel = (index: number) => {
     setPuzzleIndex(index);
-    navigate('/play');
+    // Use setTimeout to ensure state update is flushed before navigation
+    setTimeout(() => navigate('/play'), 0);
   };
 
   return (
